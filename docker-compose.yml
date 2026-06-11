@@ -1,0 +1,61 @@
+services:
+  # Optional local Postgres — only starts with `--profile localdb`.
+  # By default the backend uses the managed DATABASE_URL (e.g. Neon) from .env.
+  db:
+    image: postgres:16-alpine
+    profiles: ["localdb"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aivb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-aivbrain}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aivb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://aivb:changeme@db:5432/aivbrain}
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-long-random-secret-in-production}
+      JWT_EXPIRES_MIN: ${JWT_EXPIRES_MIN:-720}
+      BREAK_DURATION_SECONDS: ${BREAK_DURATION_SECONDS:-300}
+      ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_BOOTSTRAP_USERNAME:-admin}
+      ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:-changeme-admin}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - appnet
+
+volumes:
+  pgdata:
+
+networks:
+  appnet:
+    driver: bridge

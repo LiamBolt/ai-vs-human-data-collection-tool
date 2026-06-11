@@ -1,0 +1,54 @@
+import { create } from 'zustand'
+
+export type Theme = 'light' | 'dark'
+
+const STORAGE_KEY = 'aivb:theme'
+
+function readStoredTheme(): Theme | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored === 'light' || stored === 'dark') return stored
+  } catch {
+    // Storage unavailable — fall through to system preference
+  }
+  return null
+}
+
+function getInitialTheme(): Theme {
+  const stored = readStoredTheme()
+  if (stored) return stored
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light'
+  }
+  return 'dark'
+}
+
+function applyTheme(theme: Theme): void {
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', theme)
+  }
+}
+
+interface ThemeStore {
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  toggleTheme: () => void
+}
+
+export const useThemeStore = create<ThemeStore>((set, get) => ({
+  theme: getInitialTheme(),
+  setTheme: (theme) => {
+    applyTheme(theme)
+    try {
+      localStorage.setItem(STORAGE_KEY, theme)
+    } catch {
+      // Persistence is best-effort; the in-memory theme still applies
+    }
+    set({ theme })
+  },
+  toggleTheme: () => get().setTheme(get().theme === 'dark' ? 'light' : 'dark'),
+}))
+
+// Ensure the DOM matches the resolved initial theme (the inline script in
+// index.html sets this pre-paint; this keeps them in sync if that didn't run).
+applyTheme(useThemeStore.getState().theme)

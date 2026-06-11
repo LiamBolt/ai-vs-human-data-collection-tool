@@ -1,0 +1,67 @@
+/*
+ * Design tokens — themed via [data-theme] on <html>.
+ * Components must consume these variables (through Tailwind token classes),
+ * never raw hex. The dark palette is the spec-pinned analysis palette and is
+ * the default; the light palette mirrors it with AA-contrast substitutes.
+ */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --background:      #112330;
+  --surface-card:    #1A303F;
+  --surface-hover:   #243D4F;
+  --text-primary:    #FCFDFD;
+  --text-secondary:  #B3C0CB;
+  --text-disabled:   #6E8291;
+  --border-subtle:   #2A4356;
+  --accent:          #38BDF8;
+  --accent-hover:    #0EA5E9;
+  --accent-contrast: #08222F; /* text/icon color on top of --accent */
+  --success:         #34D399;
+  --warning:         #FBBF24;
+  --error:           #F87171;
+
+  /* Ambient background gradient wash (kept subtle so data stays readable) */
+  --bg-gradient-1: rgba(56, 189, 248, 0.16);
+  --bg-gradient-2: rgba(13, 148, 136, 0.14);
+  --bg-gradient-3: rgba(99, 102, 241, 0.12);
+
+  /* Glassmorphism */
+  --glass-bg:        rgba(26, 48, 63, 0.55);
+  --glass-bg-strong: rgba(26, 48, 63, 0.74);
+  --glass-border:    rgba(255, 255, 255, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.06);
+  --glass-shadow:    0 8px 32px rgba(3, 12, 20, 0.45);
+  --glass-blur:      16px;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --background:      #E9EFF5;
+  --surface-card:    #FFFFFF;
+  --surface-hover:   #EEF3F8;
+  --text-primary:    #0E2230;
+  --text-secondary:  #44586A;
+  --text-disabled:   #7C8EA0;
+  --border-subtle:   #D2DEE8;
+  --accent:          #0284C7;
+  --accent-hover:    #0369A1;
+  --accent-contrast: #FFFFFF;
+  --success:         #047857;
+  --warning:         #B45309;
+  --error:           #DC2626;
+
+  --bg-gradient-1: rgba(2, 132, 199, 0.14);
+  --bg-gradient-2: rgba(13, 148, 136, 0.12);
+  --bg-gradient-3: rgba(99, 102, 241, 0.10);
+
+  --glass-bg:        rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.80);
+  --glass-border:    rgba(15, 34, 48, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.60);
+  --glass-shadow:    0 8px 32px rgba(15, 34, 48, 0.12);
+  --glass-blur:      16px;
+}
