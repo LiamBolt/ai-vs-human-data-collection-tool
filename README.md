@@ -14,24 +14,41 @@ proctor deviation log) and captures behavioral telemetry for COI/HES analysis.
 
 ## Quick start (LAN island, no internet)
 
-From a clean clone on the clinic host:
+From a clean clone on the host:
 
 ```bash
-cp .env.example .env          # adjust secrets for production
+cp .env.example .env          # then set DATABASE_URL + secrets (see below)
 docker compose up -d --build
 ```
 
-This brings up three services on one bridge network:
+Services:
 
-| Service    | Image                     | Purpose                                         |
-|------------|---------------------------|-------------------------------------------------|
-| `db`       | postgres:16-alpine        | Data store (named volume `pgdata`)              |
-| `backend`  | python:3.12-slim          | FastAPI API — migrations + seed run on startup  |
-| `frontend` | nginx:stable-alpine       | Serves the SPA, proxies `/api/` → `backend:8000`|
+| Service    | Image                     | Purpose                                                  |
+|------------|---------------------------|----------------------------------------------------------|
+| `backend`  | python:3.12-slim          | FastAPI API — migrations + seed run on startup           |
+| `frontend` | nginx:stable-alpine       | Serves the SPA, proxies `/api/` → `backend:8000`         |
+| `db`       | postgres:16-alpine        | **Optional** local Postgres — only with `--profile localdb` |
 
-On startup the backend logs four stages: `DB ready → migrations applied → seed verified → server listening`,
+By default the backend uses the **managed `DATABASE_URL`** from `.env` (e.g. Neon — see below), so no local
+database is needed. To run a self-contained local Postgres instead, start with
+`docker compose --profile localdb up -d --build` and point `DATABASE_URL` at `db`.
+
+On startup the backend logs: `DB ready → migrations applied → seed verified → server listening`,
 seeds the instruments (tasks + hints, verbatim from Module D), and bootstraps an **ADMIN** account
 from `ADMIN_BOOTSTRAP_USERNAME` / `ADMIN_BOOTSTRAP_PASSWORD` if no staff exist.
+
+### Using Neon (or any managed Postgres)
+
+Paste the provider's connection string into `.env` as-is — the app normalizes it automatically
+(forces the `asyncpg` driver, strips libpq-only params like `sslmode`/`channel_binding`, enables TLS,
+and uses PgBouncer-safe pooling for Neon's `-pooler` endpoint):
+
+```bash
+DATABASE_URL=postgresql://USER:PASSWORD@ep-xxxx-pooler.REGION.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+```
+
+`.env` is git-ignored — **never commit real credentials**. On first start the backend creates the schema
+and seeds instruments directly in your Neon database.
 
 Then, from any device on the same LAN, open:
 
@@ -116,3 +133,33 @@ BREAK_DURATION_SECONDS=3 E2E_BASE_URL=http://localhost/api/v1 python scripts/e2e
 Every CSV is tidy (one observation per row, atomic typed columns), carries `participant_code`
 (plus `session_number` / `task_code` where applicable) for pandas merges, and excludes
 `user_agent_raw`. `data_dictionary.csv` documents every exported column.
+
+---
+
+## Hosting (GitHub → a server)
+
+Yes — committing to GitHub makes hosting straightforward, **as long as secrets stay out of the repo**
+(`.env` is git-ignored; set real values as host/platform environment variables or secrets).
+
+**Recommended: a single container host (VPS) + Neon.**
+1. Push the repo to GitHub (the working tree already excludes `.env`).
+2. On a Docker-capable host (DigitalOcean / Hetzner / EC2 / Fly Machines):
+   ```bash
+   git clone <your-repo> && cd ai-vs-human-data-collection-tool
+   cp .env.example .env     # set DATABASE_URL (Neon), JWT_SECRET, ADMIN_BOOTSTRAP_*
+   docker compose up -d --build
+   ```
+   The frontend serves on port 80 and proxies `/api/` to the backend; Neon is the database.
+3. Put a TLS terminator (Caddy / nginx / the platform's load balancer) in front for HTTPS.
+
+**Alternative: split hosting.** Frontend as static files (Netlify / Vercel / GitHub Pages) with the API
+base pointed at a separately hosted backend (Render / Railway / Fly.io running `backend/Dockerfile`),
+plus Neon for the database. Set each platform's env vars from `.env.example`.
+
+**Always** rotate any credential that has appeared outside the repo (e.g. pasted into chat or a PR),
+and generate a strong `JWT_SECRET` and `ADMIN_BOOTSTRAP_PASSWORD` per environment.
+
+> Build/runtime networking note: container builds need outbound access to PyPI, and the running backend
+> needs outbound access to your database. On a normal cloud host this works out of the box. If you are on
+> a machine whose Docker **bridge network lacks internet egress/DNS**, build with `docker build --network=host`
+> and run the backend with `--network host` (or fix the daemon's DNS) so the container can reach PyPI and the DB.
