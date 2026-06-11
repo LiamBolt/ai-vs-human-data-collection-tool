@@ -1,9 +1,6 @@
 FROM python:3.12-slim
 
-# curl is used by the docker-compose healthcheck (GET /api/v1/health)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+# Healthcheck uses Python's stdlib (see docker-compose.yml) — no extra packages needed.
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

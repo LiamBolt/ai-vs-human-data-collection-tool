@@ -1,4 +1,5 @@
 import { SyncIndicator } from '@/components/ui/SyncIndicator'
+import { BrandLogo } from '@/components/ui/BrandLogo'
 
 interface ProgressStepperProps {
   session: 1 | 2
@@ -19,14 +20,17 @@ export function ProgressStepper({
 
   return (
     <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm pb-4 mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm text-text-secondary">
-          <span className="text-text-primary font-medium">Session {session}</span>
-          {' · '}
-          Task {taskIndex} of {totalTasks}
-          {' — '}
-          <span className="text-text-secondary">{taskCode} {taskFamily}</span>
-        </p>
+      <div className="flex items-center justify-between mb-2 gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <BrandLogo size={26} className="shrink-0" />
+          <p className="text-sm text-text-secondary truncate">
+            <span className="text-text-primary font-medium">Session {session}</span>
+            {' · '}
+            Task {taskIndex} of {totalTasks}
+            {' — '}
+            <span className="text-text-secondary">{taskCode} {taskFamily}</span>
+          </p>
+        </div>
         <SyncIndicator />
       </div>
 

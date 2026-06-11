@@ -49,16 +49,20 @@ export default function WelcomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md flex flex-col gap-7">
-        <div className="flex flex-col gap-2 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-            AI vs the Brain
-          </h1>
-          <p className="text-sm text-text-secondary">
-            Research Data Collection Platform
-          </p>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <BrandLogo size={76} />
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+              AI vs the Brain
+            </h1>
+            <p className="text-sm text-text-secondary">
+              Research Data Collection Platform
+            </p>
+          </div>
         </div>
 
         <FormShell
+          showBrand={false}
           eyebrow="Participant access"
           title="Sign in to continue"
           subtitle="Enter the Participant ID your proctor gave you. Your progress is saved automatically."

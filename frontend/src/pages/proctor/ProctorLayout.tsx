@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
+import { BrandLogo } from '@/components/ui/BrandLogo'
 
 const NAV_ITEMS = [
   { to: '/proctor/batches', label: 'Batches' },
@@ -26,8 +27,7 @@ export default function ProctorLayout() {
       {/* Sidebar nav */}
       <nav className="w-56 shrink-0 bg-surface-card border-r border-border-subtle flex flex-col">
         <div className="px-5 py-5 border-b border-border-subtle">
-          <p className="text-xs text-text-disabled uppercase tracking-wider">AI vs the Brain</p>
-          <p className="text-sm font-semibold text-text-primary mt-0.5">Proctor Console</p>
+          <BrandLogo size={36} withWordmark subtitle="Proctor Console" />
         </div>
 
         <div className="flex-1 py-4 flex flex-col gap-0.5 px-3">
