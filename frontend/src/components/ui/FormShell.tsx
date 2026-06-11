@@ -1,3 +1,5 @@
+import { BrandLogo } from '@/components/ui/BrandLogo'
+
 interface FormShellProps {
   /** Small uppercase label above the title (e.g. "Participant access"). */
   eyebrow?: string
@@ -9,12 +11,15 @@ interface FormShellProps {
   className?: string
   /** Tailwind max-width utility for the shell. Defaults to a single-column form width. */
   maxWidth?: string
+  /** Show the brand mark at the top of the form. Defaults to true. */
+  showBrand?: boolean
 }
 
 /**
  * A glassmorphic, clearly-bordered container that frames a form so it reads as a
  * distinct, professional region. The accent hairline along the top edge plus the
- * glass border give the form an unmistakable boundary.
+ * glass border give the form an unmistakable boundary, and the brand mark keeps
+ * the study identity present while the participant fills the form.
  */
 export function FormShell({
   eyebrow,
@@ -24,13 +29,17 @@ export function FormShell({
   footer,
   className = '',
   maxWidth = 'max-w-md',
+  showBrand = true,
 }: FormShellProps) {
   const hasHeader = Boolean(eyebrow || title || subtitle)
 
   return (
     <section
+      id="main-content"
+      tabIndex={-1}
+      aria-label={title ?? 'Form'}
       className={[
-        'relative w-full overflow-hidden',
+        'relative w-full overflow-hidden focus:outline-none',
         maxWidth,
         'glass-panel-strong rounded-modal',
         'px-6 py-7 sm:px-8 sm:py-9',
@@ -43,6 +52,8 @@ export function FormShell({
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70"
       />
+
+      {showBrand && <BrandLogo size={40} />}
 
       {hasHeader && (
         <header className="flex flex-col gap-1.5">

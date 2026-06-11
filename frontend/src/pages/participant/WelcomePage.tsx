@@ -6,6 +6,7 @@ import { useSessionStore } from '@/store/session'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { FormShell } from '@/components/ui/FormShell'
+import { BrandLogo } from '@/components/ui/BrandLogo'
 import { findStoredParticipantCode } from '@/lib/utils'
 import { resolveStepRoute } from './routeUtils'
 
