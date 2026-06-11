@@ -63,8 +63,9 @@ async def set_assignment(
 @router.patch("/participants/{participant_id}/warmup-override", status_code=status.HTTP_204_NO_CONTENT)
 async def warmup_override(
     participant_id: uuid.UUID, payload: schemas.WarmupOverrideRequest, db: DbSession, _: StaffDep
-) -> None:
+):
     await service.override_warmup(db, participant_id, payload.score)
+    return None
 
 
 # ── Deviations / Layer 2 ──────────────────────────────────────────────────────

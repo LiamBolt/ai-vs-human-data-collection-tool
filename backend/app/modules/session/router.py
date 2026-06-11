@@ -15,8 +15,9 @@ async def resume(payload: schemas.ResumeRequest, db: DbSession) -> schemas.Resum
 
 
 @router.patch("/session/state", status_code=status.HTTP_204_NO_CONTENT)
-async def sync_state(payload: schemas.StateSyncRequest, db: DbSession) -> None:
+async def sync_state(payload: schemas.StateSyncRequest, db: DbSession):
     await service.sync_state(db, payload)
+    return None
 
 
 @router.post("/form0/submit", response_model=schemas.Form0Response)
@@ -47,8 +48,9 @@ async def break_status(db: DbSession, participant_code: str = Query(...)) -> sch
 
 
 @router.post("/break/complete", status_code=status.HTTP_204_NO_CONTENT)
-async def complete_break(payload: schemas.BreakCompleteRequest, db: DbSession) -> None:
+async def complete_break(payload: schemas.BreakCompleteRequest, db: DbSession):
     await service.complete_break(db, payload)
+    return None
 
 
 @router.post("/scales/submit", status_code=status.HTTP_201_CREATED)
