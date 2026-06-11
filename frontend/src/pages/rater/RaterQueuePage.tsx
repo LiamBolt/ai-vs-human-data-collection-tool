@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/auth'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { BrandLogo } from '@/components/ui/BrandLogo'
 import type { RaterResponse, RaterScorePayload } from '@/types'
 
 // Segmented 0–2 control
@@ -102,11 +103,14 @@ export default function RaterQueuePage() {
     <div className="min-h-screen bg-background flex">
       {/* Queue list */}
       <aside className="w-64 shrink-0 bg-surface-card border-r border-border-subtle flex flex-col">
-        <div className="px-4 py-4 border-b border-border-subtle">
-          <p className="text-xs text-text-disabled">Rater · {displayCode}</p>
-          <p className="text-sm font-semibold text-text-primary mt-0.5">
-            {queue.length} response{queue.length !== 1 ? 's' : ''} to score
-          </p>
+        <div className="px-4 py-4 border-b border-border-subtle flex flex-col gap-3">
+          <BrandLogo size={30} withWordmark subtitle="Rater panel" />
+          <div>
+            <p className="text-xs text-text-disabled">Rater · {displayCode}</p>
+            <p className="text-sm font-semibold text-text-primary mt-0.5">
+              {queue.length} response{queue.length !== 1 ? 's' : ''} to score
+            </p>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2">

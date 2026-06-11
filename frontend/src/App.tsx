@@ -52,6 +52,13 @@ function RaterRequireAuth() {
 export default function App() {
   return (
     <ErrorBoundary>
+      {/* Accessibility: keyboard users can jump straight to the form/content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-input focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-accent-contrast focus:shadow-glass"
+      >
+        Skip to content
+      </a>
       {/* Global theme switch — available on every screen */}
       <ThemeToggle className="fixed top-4 right-4 z-50" />
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
