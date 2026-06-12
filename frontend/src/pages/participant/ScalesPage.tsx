@@ -4,7 +4,6 @@ import { useMutation } from '@tanstack/react-query'
 import { submitScales } from '@/lib/api'
 import { useSessionStore } from '@/store/session'
 import { Button } from '@/components/ui/Button'
-import { Card, CardBody } from '@/components/ui/Card'
 import type { ScaleItem, SessionNumber } from '@/types'
 
 // Scale items verbatim from Module D6

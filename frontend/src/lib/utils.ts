@@ -1,5 +1,3 @@
-import { type ClassValue, clsx } from 'clsx'
-
 // Minimal class merging utility (no external dep needed — roll our own)
 export function cn(...inputs: ClassValue[]): string {
   return inputs
@@ -92,12 +90,12 @@ export function findStoredParticipantCode(): string | null {
 }
 
 // Debounce utility
-export function debounce<T extends (...args: unknown[]) => void>(
-  fn: T,
+export function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
   ms: number,
-): (...args: Parameters<T>) => void {
+): (...args: A) => void {
   let timer: ReturnType<typeof setTimeout> | null = null
-  return (...args: Parameters<T>) => {
+  return (...args: A) => {
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => fn(...args), ms)
   }
