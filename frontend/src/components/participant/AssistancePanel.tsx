@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { requestHint } from '@/lib/api'
 import { useSessionStore } from '@/store/session'
-import { Card, CardBody } from '@/components/ui/Card'
 
 const LEVEL_LABELS: Record<1 | 2 | 3, string> = {
   1: 'Level 1 — Hint',

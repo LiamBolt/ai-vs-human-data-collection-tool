@@ -11,6 +11,9 @@ const NAV_ITEMS = [
   { to: '/proctor/exports', label: 'Exports' },
 ]
 
+// ADMIN-only nav entries appended when the signed-in staff is an admin.
+const ADMIN_NAV_ITEMS = [{ to: '/proctor/staff', label: 'Staff' }]
+
 export default function ProctorLayout() {
   const navigate = useNavigate()
   const clearAuth = useAuthStore((s) => s.clearAuth)
@@ -31,7 +34,7 @@ export default function ProctorLayout() {
         </div>
 
         <div className="flex-1 py-4 flex flex-col gap-0.5 px-3">
-          {NAV_ITEMS.map((item) => (
+          {[...NAV_ITEMS, ...(role === 'ADMIN' ? ADMIN_NAV_ITEMS : [])].map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

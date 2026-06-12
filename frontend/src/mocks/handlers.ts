@@ -46,6 +46,26 @@ const BREAK_DURATION_S = 30 // Short for dev
 
 let breakEndsAt: string | null = null
 
+// In-memory staff registry for dev (seeded with the bootstrap admin)
+interface MockStaff {
+  id: string
+  username: string
+  role: 'PROCTOR' | 'RATER' | 'ADMIN'
+  display_code: string
+  is_active: boolean
+  created_at: string
+}
+const staffStore: MockStaff[] = [
+  {
+    id: uuidv4(),
+    username: 'admin',
+    role: 'ADMIN',
+    display_code: 'ADMIN-01',
+    is_active: true,
+    created_at: new Date().toISOString(),
+  },
+]
+
 export const handlers = [
   // ── Health ──────────────────────────────────────────────────────────────────
   http.get('/api/v1/health', () =>
@@ -206,6 +226,48 @@ export const handlers = [
       { error: { code: 'INVALID_CREDENTIALS', message: 'Invalid username or password' } },
       { status: 401 },
     )
+  }),
+
+  // ── Staff management (ADMIN only) ────────────────────────────────────────────
+  http.get('/api/v1/auth/staff', () => HttpResponse.json(staffStore)),
+
+  http.post('/api/v1/auth/staff', async ({ request }) => {
+    const body = (await request.json()) as {
+      username: string
+      password: string
+      role: 'PROCTOR' | 'RATER' | 'ADMIN'
+      display_code?: string
+    }
+    if (staffStore.some((s) => s.username === body.username)) {
+      return HttpResponse.json(
+        { error: { code: 'USERNAME_TAKEN', message: 'That username is already taken.' } },
+        { status: 409 },
+      )
+    }
+    const count = staffStore.filter((s) => s.role === body.role).length
+    const member = {
+      id: uuidv4(),
+      username: body.username,
+      role: body.role,
+      display_code: body.display_code || `${body.role}-${String(count + 1).padStart(2, '0')}`,
+      is_active: true,
+      created_at: new Date().toISOString(),
+    }
+    staffStore.push(member)
+    return HttpResponse.json(member, { status: 201 })
+  }),
+
+  http.patch('/api/v1/auth/staff/:staffId', async ({ params, request }) => {
+    const body = (await request.json()) as { is_active: boolean }
+    const member = staffStore.find((s) => s.id === params.staffId)
+    if (!member) {
+      return HttpResponse.json(
+        { error: { code: 'NOT_FOUND', message: 'Staff account not found.' } },
+        { status: 404 },
+      )
+    }
+    member.is_active = body.is_active
+    return HttpResponse.json(member)
   }),
 
   // ── Sites ────────────────────────────────────────────────────────────────────

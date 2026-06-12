@@ -27,6 +27,7 @@ const MonitorPage = lazy(() => import('@/pages/proctor/MonitorPage'))
 const DeviationsPage = lazy(() => import('@/pages/proctor/DeviationsPage'))
 const Layer2Page = lazy(() => import('@/pages/proctor/Layer2Page'))
 const ExportsPage = lazy(() => import('@/pages/proctor/ExportsPage'))
+const StaffPage = lazy(() => import('@/pages/proctor/StaffPage'))
 
 // Rater pages
 const RaterLoginPage = lazy(() => import('@/pages/rater/RaterLoginPage'))
@@ -190,6 +191,10 @@ export default function App() {
               <Route path="/proctor/deviations" element={<DeviationsPage />} />
               <Route path="/proctor/layer2" element={<Layer2Page />} />
               <Route path="/proctor/exports" element={<ExportsPage />} />
+              {/* Staff management is ADMIN-only (backend also enforces this) */}
+              <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
+                <Route path="/proctor/staff" element={<StaffPage />} />
+              </Route>
             </Route>
           </Route>
 

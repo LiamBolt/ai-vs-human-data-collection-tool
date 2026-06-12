@@ -1,0 +1,51 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# One-click deploy: Render Dashboard → New → Blueprint → connect this repo.
+# Render reads this file and creates both services below.
+#
+# After the first deploy you MUST set the secrets marked `sync: false` in the
+# dashboard (they are intentionally NOT in the repo):
+#   • aivb-backend  → DATABASE_URL              (your Neon connection string)
+#   • aivb-backend  → ADMIN_BOOTSTRAP_PASSWORD  (your chosen admin password)
+#   • aivb-frontend → VITE_API_BASE_URL         (https://<backend-url>/api/v1)
+#
+# The frontend is a static site that calls the backend's absolute URL; the
+# backend already returns Access-Control-Allow-Origin: * so cross-origin works.
+
+services:
+  # ── FastAPI backend (Docker) ────────────────────────────────────────────────
+  - type: web
+    name: aivb-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false # set to your Neon connection string in the dashboard
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong random secret
+      - key: JWT_EXPIRES_MIN
+        value: "720"
+      - key: BREAK_DURATION_SECONDS
+        value: "300"
+      - key: ADMIN_BOOTSTRAP_USERNAME
+        value: admin
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false # set your own admin password in the dashboard
+
+  # ── React SPA (static site) ─────────────────────────────────────────────────
+  - type: web
+    name: aivb-frontend
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false # set to https://<your-backend>.onrender.com/api/v1
+    # SPA fallback: serve index.html for client-side routes (deep links / refresh)
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

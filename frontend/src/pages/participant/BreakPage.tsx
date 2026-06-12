@@ -22,14 +22,18 @@ export default function BreakPage() {
   const completedRef = useRef(false)
 
   // Fetch current break status from server (refresh-proof)
-  useQuery({
+  const { data: breakStatus } = useQuery({
     queryKey: ['break-status', participantCode],
     queryFn: () => getBreakStatus(participantCode!),
     enabled: !!participantCode && !breakEndsAt,
-    onSuccess: (data) => {
-      setBreakEndsAt(data.break_ends_at)
-    },
   })
+
+  // TanStack Query v5 removed onSuccess — mirror server value into the store via effect
+  useEffect(() => {
+    if (breakStatus) {
+      setBreakEndsAt(breakStatus.break_ends_at)
+    }
+  }, [breakStatus, setBreakEndsAt])
 
   // Start break if not started
   const startMutation = useMutation({
