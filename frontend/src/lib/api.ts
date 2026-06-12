@@ -31,7 +31,10 @@ import type {
   StaffCreatePayload,
 } from '@/types'
 
-const BASE = '/api/v1'
+// Same-origin '/api/v1' for local/compose (nginx proxies it). For split hosting
+// (e.g. Render), set VITE_API_BASE_URL at build time to the backend's absolute URL,
+// e.g. https://aivb-backend.onrender.com/api/v1.
+const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 
 // Retrieve the stored JWT for authenticated requests
 function getAuthHeader(): Record<string, string> {
