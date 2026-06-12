@@ -199,6 +199,23 @@ export interface LoginResponse {
   display_code: string
 }
 
+// ── Staff management (ADMIN only) ─────────────────────────────────────────────
+export interface StaffMember {
+  id: string
+  username: string
+  role: StaffRole
+  display_code: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface StaffCreatePayload {
+  username: string
+  password: string
+  role: StaffRole
+  display_code?: string
+}
+
 // ── Proctor / admin types ─────────────────────────────────────────────────────
 export interface Site {
   id: string

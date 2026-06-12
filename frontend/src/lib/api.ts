@@ -27,6 +27,8 @@ import type {
   RaterResponse,
   RaterScorePayload,
   ExportMeta,
+  StaffMember,
+  StaffCreatePayload,
 } from '@/types'
 
 const BASE = '/api/v1'
@@ -107,6 +109,16 @@ export const submitTransferPrompt = (payload: TransferPromptPayload) =>
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const login = (credentials: LoginCredentials) =>
   request<LoginResponse>('POST', '/auth/login', credentials)
+
+// ── Staff management (ADMIN only) ──────────────────────────────────────────────
+export const getStaff = () =>
+  request<StaffMember[]>('GET', '/auth/staff', undefined, true)
+
+export const createStaff = (payload: StaffCreatePayload) =>
+  request<StaffMember>('POST', '/auth/staff', payload, true)
+
+export const setStaffActive = (staffId: string, isActive: boolean) =>
+  request<StaffMember>('PATCH', `/auth/staff/${staffId}`, { is_active: isActive }, true)
 
 // ── Proctor / admin ───────────────────────────────────────────────────────────
 export const getSites = () =>
