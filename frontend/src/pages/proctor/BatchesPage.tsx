@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getBatches, getSites, createBatch } from '@/lib/api'
+import { getBatches, getSites, createBatch, createSite } from '@/lib/api'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -21,6 +21,11 @@ export default function BatchesPage() {
   const [timingMode, setTimingMode] = useState<'PER_TASK' | 'BLOCK'>('PER_TASK')
   const [formError, setFormError] = useState<string | null>(null)
 
+  const [showSiteForm, setShowSiteForm] = useState(false)
+  const [newSiteCode, setNewSiteCode] = useState('')
+  const [newSiteName, setNewSiteName] = useState('')
+  const [siteError, setSiteError] = useState<string | null>(null)
+
   const mutation = useMutation({
     mutationFn: () =>
       createBatch({
@@ -37,11 +42,29 @@ export default function BatchesPage() {
     onError: () => setFormError('Failed to create batch. Check all fields.'),
   })
 
+  const siteMutation = useMutation({
+    mutationFn: () => createSite({ site_code: newSiteCode.trim().toUpperCase(), site_name: newSiteName.trim() }),
+    onSuccess: (created) => {
+      qc.invalidateQueries({ queryKey: ['sites'] })
+      setShowSiteForm(false)
+      setNewSiteCode(''); setNewSiteName('')
+      setSiteId(created.id)
+    },
+    onError: () => setSiteError('Failed to create site. The code may already exist.'),
+  })
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
     if (!siteId || !clinicDate) { setFormError('Please fill in all required fields.'); return }
     mutation.mutate()
+  }
+
+  const handleCreateSite = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSiteError(null)
+    if (!newSiteCode.trim() || !newSiteName.trim()) { setSiteError('Both fields are required.'); return }
+    siteMutation.mutate()
   }
 
   return (
@@ -61,7 +84,45 @@ export default function BatchesPage() {
           <CardBody>
             <form onSubmit={handleCreate} className="flex flex-col gap-4" noValidate>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-text-primary">Site</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-text-primary">Site</label>
+                  <button
+                    type="button"
+                    onClick={() => { setShowSiteForm((v) => !v); setSiteError(null) }}
+                    className="text-xs text-accent hover:underline focus-visible:outline-none focus-visible:underline"
+                  >
+                    {showSiteForm ? 'Cancel' : '+ Add new site'}
+                  </button>
+                </div>
+
+                {showSiteForm && (
+                  <div className="rounded-input border border-border-subtle bg-surface-hover p-3 flex flex-col gap-3">
+                    <p className="text-xs text-text-secondary">
+                      A site is a location or context for a session — e.g. "Online / Remote" or "Lab Room 2".
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        label="Code"
+                        hint="Short identifier, e.g. ONLINE"
+                        value={newSiteCode}
+                        onChange={(e) => setNewSiteCode(e.target.value)}
+                        inputWidth="w-full"
+                      />
+                      <Input
+                        label="Name"
+                        hint="Full name, e.g. Online / Remote"
+                        value={newSiteName}
+                        onChange={(e) => setNewSiteName(e.target.value)}
+                        inputWidth="w-full"
+                      />
+                    </div>
+                    {siteError && <p role="alert" className="text-xs text-error">{siteError}</p>}
+                    <Button type="button" variant="secondary" loading={siteMutation.isPending} onClick={handleCreateSite}>
+                      Save site
+                    </Button>
+                  </div>
+                )}
+
                 <select
                   value={siteId}
                   onChange={(e) => setSiteId(e.target.value)}

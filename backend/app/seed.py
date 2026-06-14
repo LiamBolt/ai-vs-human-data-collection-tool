@@ -85,9 +85,20 @@ async def bootstrap_admin(db: AsyncSession) -> None:
     )
 
 
+async def seed_sites(db: AsyncSession) -> None:
+    existing = {
+        code for (code,) in (await db.execute(select(Site.site_code))).all()
+    }
+    for s in DEFAULT_SITES:
+        if s["site_code"] not in existing:
+            db.add(Site(site_code=s["site_code"], site_name=s["site_name"]))
+    await db.flush()
+
+
 async def run_seed(db: AsyncSession) -> None:
     await seed_tasks(db)
     await seed_hints(db)
+    await seed_sites(db)
     await bootstrap_admin(db)
     await db.commit()
     logger.info("[startup] seed verified")
