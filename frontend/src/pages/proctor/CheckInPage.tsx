@@ -113,7 +113,7 @@ export default function CheckInPage() {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-6 max-w-2xl">
+    <div className="p-6 flex flex-col gap-6">
       <h1 className="text-xl font-semibold text-text-primary">Check-in</h1>
 
       {!checkInResult ? (
@@ -159,136 +159,138 @@ export default function CheckInPage() {
         </Card>
       ) : (
         <div className="flex flex-col gap-5">
-          {/* Generated ID */}
-          <Card>
-            <CardBody className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-disabled">
-                Participant ID generated
-              </p>
-              <div className="flex items-center gap-4">
-                <p className="font-mono text-2xl font-bold text-text-primary tracking-widest">
-                  {checkInResult.participant_code}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard.writeText(checkInResult.participant_code)}
-                  className="text-xs text-accent hover:underline focus-visible:outline-none focus-visible:underline"
-                >
-                  Copy
-                </button>
-              </div>
-              <p className="text-xs text-text-secondary">
-                Hand this code to the participant to enter on their device.
-              </p>
-            </CardBody>
-          </Card>
-
-          {/* Assignment card — appears once Form 0 is complete */}
-          {!assignmentDone && !suggestion ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Generated ID */}
             <Card>
-              <CardBody className="flex flex-col gap-2">
-                <p className="text-sm font-medium text-text-primary">Waiting for Form 0…</p>
+              <CardBody className="flex flex-col gap-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-text-disabled">
+                  Participant ID generated
+                </p>
+                <div className="flex items-center gap-4">
+                  <p className="font-mono text-2xl font-bold text-text-primary tracking-widest">
+                    {checkInResult.participant_code}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(checkInResult.participant_code)}
+                    className="text-xs text-accent hover:underline focus-visible:outline-none focus-visible:underline"
+                  >
+                    Copy
+                  </button>
+                </div>
                 <p className="text-xs text-text-secondary">
-                  The group suggestion appears once the participant submits Form 0 on their device.
+                  Hand this code to the participant to enter on their device.
                 </p>
               </CardBody>
             </Card>
-          ) : !assignmentDone && suggestion ? (
-            <Card>
-              <CardHeader>
-                <h2 className="text-sm font-semibold text-text-primary">Group assignment</h2>
-              </CardHeader>
-              <CardBody className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm text-text-secondary">
-                    Suggested group:{' '}
-                    <span className="font-semibold text-text-primary">
-                      {suggestion?.suggested_group === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'}
-                    </span>
-                  </p>
-                  <p className="text-xs text-text-disabled">
-                    Stratum: {suggestion?.stratum}
-                  </p>
-                </div>
 
-                {suggestion?.current_counts && (
-                  <div className="rounded-input border border-border-subtle overflow-hidden">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="bg-surface-hover">
-                          <th className="px-3 py-2 text-left text-text-secondary font-medium">Stratum</th>
-                          <th className="px-3 py-2 text-right text-text-secondary font-medium">Control</th>
-                          <th className="px-3 py-2 text-right text-text-secondary font-medium">AI-Assisted</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(suggestion.current_counts).map(([stratum, count]) => (
-                          <tr key={stratum} className="border-t border-border-subtle">
-                            <td className="px-3 py-2 text-text-secondary">{stratum}</td>
-                            <td className="px-3 py-2 text-right text-text-primary">{String(count)}</td>
-                            <td className="px-3 py-2 text-right text-text-primary">—</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+            {/* Assignment card — appears once Form 0 is complete */}
+            {!assignmentDone && !suggestion ? (
+              <Card>
+                <CardBody className="flex flex-col gap-2">
+                  <p className="text-sm font-medium text-text-primary">Waiting for Form 0…</p>
+                  <p className="text-xs text-text-secondary">
+                    The group suggestion appears once the participant submits Form 0 on their device.
+                  </p>
+                </CardBody>
+              </Card>
+            ) : !assignmentDone && suggestion ? (
+              <Card>
+                <CardHeader>
+                  <h2 className="text-sm font-semibold text-text-primary">Group assignment</h2>
+                </CardHeader>
+                <CardBody className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-text-secondary">
+                      Suggested group:{' '}
+                      <span className="font-semibold text-text-primary">
+                        {suggestion?.suggested_group === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'}
+                      </span>
+                    </p>
+                    <p className="text-xs text-text-disabled">
+                      Stratum: {suggestion?.stratum}
+                    </p>
                   </div>
-                )}
 
-                <div className="flex flex-col gap-3">
-                  <Button
-                    type="button"
-                    loading={assignMutation.isPending}
-                    onClick={handleAcceptSuggestion}
-                    className="w-full"
-                  >
-                    Accept suggestion ({suggestion?.suggested_group === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'})
-                  </Button>
-
-                  {showOverrideInput !== null && (
-                    <Input
-                      label={`Reason for overriding to ${showOverrideInput === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'}`}
-                      value={overrideReason}
-                      onChange={(e) => setOverrideReason(e.target.value)}
-                      inputWidth="w-full"
-                    />
+                  {suggestion?.current_counts && (
+                    <div className="rounded-input border border-border-subtle overflow-hidden">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="bg-surface-hover">
+                            <th className="px-3 py-2 text-left text-text-secondary font-medium">Stratum</th>
+                            <th className="px-3 py-2 text-right text-text-secondary font-medium">Control</th>
+                            <th className="px-3 py-2 text-right text-text-secondary font-medium">AI-Assisted</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(suggestion.current_counts).map(([stratum, count]) => (
+                            <tr key={stratum} className="border-t border-border-subtle">
+                              <td className="px-3 py-2 text-text-secondary">{stratum}</td>
+                              <td className="px-3 py-2 text-right text-text-primary">{String(count)}</td>
+                              <td className="px-3 py-2 text-right text-text-primary">—</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3">
                     <Button
                       type="button"
-                      variant="secondary"
-                      onClick={() => handleOverride('CONTROL')}
-                      disabled={showOverrideInput === 'CONTROL' && !overrideReason.trim()}
-                      className="flex-1"
+                      loading={assignMutation.isPending}
+                      onClick={handleAcceptSuggestion}
+                      className="w-full"
                     >
-                      Override → Control
+                      Accept suggestion ({suggestion?.suggested_group === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'})
                     </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => handleOverride('AI_ASSISTED')}
-                      disabled={showOverrideInput === 'AI_ASSISTED' && !overrideReason.trim()}
-                      className="flex-1"
-                    >
-                      Override → AI-Assisted
-                    </Button>
+
+                    {showOverrideInput !== null && (
+                      <Input
+                        label={`Reason for overriding to ${showOverrideInput === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'}`}
+                        value={overrideReason}
+                        onChange={(e) => setOverrideReason(e.target.value)}
+                        inputWidth="w-full"
+                      />
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => handleOverride('CONTROL')}
+                        disabled={showOverrideInput === 'CONTROL' && !overrideReason.trim()}
+                        className="flex-1"
+                      >
+                        Override → Control
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => handleOverride('AI_ASSISTED')}
+                        disabled={showOverrideInput === 'AI_ASSISTED' && !overrideReason.trim()}
+                        className="flex-1"
+                      >
+                        Override → AI-Assisted
+                      </Button>
+                    </div>
                   </div>
+                </CardBody>
+              </Card>
+            ) : (
+              <div className="rounded-card border border-success/30 bg-success/5 px-5 py-4 flex items-center gap-3">
+                <svg className="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-text-primary">
+                    Assigned to: {assignedGroup === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'}
+                  </p>
+                  <p className="text-xs text-text-secondary">Participant may now complete Form 0 on their device.</p>
                 </div>
-              </CardBody>
-            </Card>
-          ) : (
-            <div className="rounded-card border border-success/30 bg-success/5 px-5 py-4 flex items-center gap-3">
-              <svg className="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <div>
-                <p className="text-sm font-medium text-text-primary">
-                  Assigned to: {assignedGroup === 'AI_ASSISTED' ? 'AI-Assisted' : 'Control'}
-                </p>
-                <p className="text-xs text-text-secondary">Participant may now complete Form 0 on their device.</p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           <Button type="button" variant="ghost" onClick={handleReset}>
             Check in another participant

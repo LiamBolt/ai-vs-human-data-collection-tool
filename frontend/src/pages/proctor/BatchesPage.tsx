@@ -85,8 +85,8 @@ export default function BatchesPage() {
               <RadioGroup
                 label="Layer"
                 options={[
-                  { value: '1', label: 'Layer 1 — Offline Hint Bank' },
-                  { value: '2', label: 'Layer 2 — Live ChatGPT calibration' },
+                  { value: '1', label: 'Layer 1: Offline Hint Bank' },
+                  { value: '2', label: 'Layer 2: Live ChatGPT calibration' },
                 ]}
                 value={layer}
                 onChange={(v) => setLayer(v as '1' | '2')}

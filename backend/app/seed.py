@@ -12,8 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.enums import StaffRole
 from app.instruments import HINTS, TASKS
-from app.models import Hint, StaffUser, Task
+from app.models import Hint, Site, StaffUser, Task
 from app.security import hash_password
+
+DEFAULT_SITES = [
+    {"site_code": "ONLINE", "site_name": "Online / Remote"},
+    {"site_code": "MAIN", "site_name": "Main Site"},
+]
 
 logger = logging.getLogger("aivb.seed")
 

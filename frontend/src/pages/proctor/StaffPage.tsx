@@ -68,7 +68,7 @@ export default function StaffPage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-semibold text-text-primary">Staff accounts</h1>
           <p className="text-xs text-text-secondary">
-            Create proctor and rater logins. IDs are anonymous codes — never use real names.
+            Create proctor and rater logins. IDs are anonymous codes. Never use real names.
           </p>
         </div>
         <Button type="button" onClick={() => { setShowForm((v) => !v); setFormError(null) }}>
@@ -103,9 +103,9 @@ export default function StaffPage() {
               <RadioGroup
                 label="Role"
                 options={[
-                  { value: 'PROCTOR', label: 'Proctor — runs clinics, checks in participants' },
-                  { value: 'RATER', label: 'Rater — blinded rubric scoring only' },
-                  { value: 'ADMIN', label: 'Admin — full access, manages staff' },
+                  { value: 'PROCTOR', label: 'Proctor: runs clinics, checks in participants' },
+                  { value: 'RATER', label: 'Rater: blinded rubric scoring only' },
+                  { value: 'ADMIN', label: 'Admin: full access, manages staff' },
                 ]}
                 value={role}
                 onChange={(v) => setRole(v as StaffRole)}
