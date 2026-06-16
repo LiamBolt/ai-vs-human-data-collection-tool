@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getBatches, getMonitor, overrideWarmupScore } from '@/lib/api'
 import { StatusBadge } from '@/components/ui/Badge'
+import { Select } from '@/components/ui/Select'
 import type { ParticipantMonitorRow } from '@/types'
+
+function groupLabel(group: ParticipantMonitorRow['group_assignment']): string {
+  return group === 'AI_ASSISTED' ? 'AI' : group === 'CONTROL' ? 'Control' : '—'
+}
 
 function SyncAge({ seconds }: { seconds: number }) {
   const color = seconds > 60 ? 'text-warning' : seconds > 120 ? 'text-error' : 'text-text-disabled'
@@ -76,19 +81,21 @@ export default function MonitorPage() {
   })
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <div className="flex items-center gap-4">
+    <div className="p-4 sm:p-6 flex flex-col gap-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <h1 className="text-xl font-semibold text-text-primary">Monitor</h1>
-        <select
-          value={batchId}
-          onChange={(e) => setBatchId(e.target.value)}
-          className="bg-surface-card border border-border-subtle rounded-input px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-        >
-          <option value="">Select batch…</option>
-          {batches?.map((b) => (
-            <option key={b.id} value={b.id}>{b.batch_code}</option>
-          ))}
-        </select>
+        <div className="w-full sm:w-64">
+          <Select
+            aria-label="Select batch to monitor"
+            value={batchId}
+            onChange={(e) => setBatchId(e.target.value)}
+          >
+            <option value="">Select batch…</option>
+            {batches?.map((b) => (
+              <option key={b.id} value={b.id}>{b.batch_code}</option>
+            ))}
+          </Select>
+        </div>
       </div>
 
       {!batchId && (
@@ -99,8 +106,9 @@ export default function MonitorPage() {
         <p className="text-sm text-text-disabled">Loading…</p>
       )}
 
+      {/* Desktop / tablet: dense table (≥ md) */}
       {roster && (
-        <div className="overflow-x-auto rounded-card border border-border-subtle">
+        <div className="hidden md:block overflow-x-auto rounded-card border border-border-subtle">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-surface-card border-b border-border-subtle">
               <tr>
@@ -163,6 +171,53 @@ export default function MonitorPage() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Mobile: stacked cards (< md) — same data, no horizontal scroll */}
+      {roster && (
+        <div className="md:hidden flex flex-col gap-3">
+          {roster.length === 0 && (
+            <p className="text-sm text-text-disabled">No participants checked in yet.</p>
+          )}
+          {roster.map((row) => (
+            <div
+              key={row.participant_code}
+              className="rounded-card border border-border-subtle bg-surface-card p-4 flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-mono text-sm text-text-primary break-all" title={row.participant_code}>
+                  {row.participant_code}
+                </span>
+                <StatusBadge status={row.status} />
+              </div>
+
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs uppercase tracking-wider text-text-disabled">Step</dt>
+                  <dd className="text-xs text-text-secondary break-words">{row.current_step}</dd>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs uppercase tracking-wider text-text-disabled">Last sync</dt>
+                  <dd><SyncAge seconds={row.last_sync_age_seconds} /></dd>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs uppercase tracking-wider text-text-disabled">Infractions</dt>
+                  <dd className={row.infraction_count > 0 ? 'text-error text-sm font-semibold' : 'text-text-disabled text-sm'}>
+                    {row.infraction_count}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs uppercase tracking-wider text-text-disabled">Group</dt>
+                  <dd className="text-xs text-text-secondary">{groupLabel(row.group_assignment)}</dd>
+                </div>
+                <div className="flex flex-col gap-0.5 col-span-2">
+                  <dt className="text-xs uppercase tracking-wider text-text-disabled">Warm-up</dt>
+                  <dd><WarmupCell row={row} /></dd>
+                </div>
+              </dl>
+            </div>
+          ))}
         </div>
       )}
     </div>

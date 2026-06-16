@@ -69,6 +69,7 @@ export default function RaterQueuePage() {
   const [justQuality, setJustQuality] = useState<number>(-1)
   const [independence, setIndependence] = useState<number>(-1)
   const [submitErrors, setSubmitErrors] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const mutation = useMutation({
     mutationFn: (payload: RaterScorePayload) => submitRaterScore(payload),
@@ -99,57 +100,106 @@ export default function RaterQueuePage() {
 
   const selected: RaterResponse | undefined = queue[selectedIdx]
 
+  // Shared queue sidebar body — reused by the desktop rail and the mobile drawer.
+  const sidebarBody = (
+    <>
+      <div className="px-4 py-4 border-b border-border-subtle flex flex-col gap-3">
+        <BrandLogo size={30} withWordmark subtitle="Rater panel" />
+        <div>
+          <p className="text-xs text-text-disabled">Rater · {displayCode}</p>
+          <p className="text-sm font-semibold text-text-primary mt-0.5">
+            {queue.length} response{queue.length !== 1 ? 's' : ''} to score
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto py-2">
+        {isLoading && <p className="text-xs text-text-disabled px-4 py-3">Loading…</p>}
+        {queue.map((r, idx) => (
+          <button
+            key={r.response_id}
+            type="button"
+            onClick={() => {
+              setSelectedIdx(idx)
+              setCorrectness(-1); setJustQuality(-1); setIndependence(-1)
+              setSubmitErrors(false)
+              setDrawerOpen(false)
+            }}
+            className={[
+              'w-full flex flex-col gap-0.5 px-4 py-3 text-left min-h-[44px]',
+              'transition-colors duration-150 focus-visible:outline-none focus-visible:bg-surface-hover',
+              idx === selectedIdx
+                ? 'bg-accent/10 border-l-2 border-accent'
+                : 'hover:bg-surface-hover',
+            ].join(' ')}
+          >
+            <span className="text-xs font-semibold text-text-primary font-mono">
+              {r.task_code} · S{r.session_number}
+            </span>
+            <span className="text-xs text-text-disabled truncate">{r.response_id.slice(0, 16)}…</span>
+          </button>
+        ))}
+        {!isLoading && queue.length === 0 && (
+          <p className="text-xs text-text-disabled px-4 py-3">No responses in queue.</p>
+        )}
+      </div>
+
+      <div className="px-4 py-4 border-t border-border-subtle">
+        <button type="button" onClick={handleSignOut} className="text-xs text-text-disabled hover:text-text-secondary">Sign out</button>
+      </div>
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Queue list */}
-      <aside className="w-64 shrink-0 bg-surface-card border-r border-border-subtle flex flex-col">
-        <div className="px-4 py-4 border-b border-border-subtle flex flex-col gap-3">
-          <BrandLogo size={30} withWordmark subtitle="Rater panel" />
-          <div>
-            <p className="text-xs text-text-disabled">Rater · {displayCode}</p>
-            <p className="text-sm font-semibold text-text-primary mt-0.5">
-              {queue.length} response{queue.length !== 1 ? 's' : ''} to score
-            </p>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto py-2">
-          {isLoading && <p className="text-xs text-text-disabled px-4 py-3">Loading…</p>}
-          {queue.map((r, idx) => (
-            <button
-              key={r.response_id}
-              type="button"
-              onClick={() => {
-                setSelectedIdx(idx)
-                setCorrectness(-1); setJustQuality(-1); setIndependence(-1)
-                setSubmitErrors(false)
-              }}
-              className={[
-                'w-full flex flex-col gap-0.5 px-4 py-3 text-left',
-                'transition-colors duration-150 focus-visible:outline-none focus-visible:bg-surface-hover',
-                idx === selectedIdx
-                  ? 'bg-accent/10 border-l-2 border-accent'
-                  : 'hover:bg-surface-hover',
-              ].join(' ')}
-            >
-              <span className="text-xs font-semibold text-text-primary font-mono">
-                {r.task_code} · S{r.session_number}
-              </span>
-              <span className="text-xs text-text-disabled truncate">{r.response_id.slice(0, 16)}…</span>
-            </button>
-          ))}
-          {!isLoading && queue.length === 0 && (
-            <p className="text-xs text-text-disabled px-4 py-3">No responses in queue.</p>
-          )}
-        </div>
-
-        <div className="px-4 py-4 border-t border-border-subtle">
-          <button type="button" onClick={handleSignOut} className="text-xs text-text-disabled hover:text-text-secondary">Sign out</button>
-        </div>
+      {/* Desktop queue rail (≥ lg) */}
+      <aside className="hidden lg:flex w-64 shrink-0 bg-surface-card border-r border-border-subtle flex-col">
+        {sidebarBody}
       </aside>
 
-      {/* Scoring area */}
-      <main className="flex-1 overflow-y-auto">
+      {/* Mobile top bar (< lg) */}
+      <header className="lg:hidden fixed inset-x-0 top-0 z-30 flex items-center justify-between h-14 pl-4 pr-14 bg-surface-card border-b border-border-subtle">
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open response queue"
+          aria-expanded={drawerOpen}
+          className="flex items-center gap-2 min-h-[44px] px-2 -ml-2 rounded-input text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <span className="text-sm font-medium text-text-primary">Queue ({queue.length})</span>
+        </button>
+        <BrandLogo size={26} withWordmark />
+      </header>
+
+      {/* Mobile drawer + backdrop (< lg) */}
+      {drawerOpen && (
+        <div className="lg:hidden fixed inset-0 z-40">
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+            aria-hidden="true"
+          />
+          <aside className="absolute inset-y-0 left-0 w-64 max-w-[80%] bg-surface-card border-r border-border-subtle flex flex-col shadow-glass animate-[fadeIn_200ms_ease-out]">
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close response queue"
+              className="absolute top-3 right-3 flex items-center justify-center min-h-[44px] min-w-[44px] rounded-input text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            {sidebarBody}
+          </aside>
+        </div>
+      )}
+
+      {/* Scoring area — offset below the fixed top bar on mobile only */}
+      <main className="flex-1 overflow-y-auto pt-14 lg:pt-0">
         {!selected ? (
           <div className="flex items-center justify-center min-h-screen">
             <p className="text-sm text-text-disabled">
@@ -157,7 +207,7 @@ export default function RaterQueuePage() {
             </p>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-8">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8">
             <div className="flex items-center justify-between">
               <p className="text-xs text-text-disabled">
                 {selectedIdx + 1} of {queue.length} · Task {selected.task_code} · Session {selected.session_number}

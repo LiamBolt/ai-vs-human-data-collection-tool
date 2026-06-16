@@ -37,8 +37,8 @@ export default function ExportsPage() {
   const EXPORT_NAMES = Object.keys(EXPORT_LABELS)
 
   return (
-    <div className="p-6 flex flex-col gap-6 max-w-3xl">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 flex flex-col gap-6 max-w-3xl">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <h1 className="text-xl font-semibold text-text-primary">Exports</h1>
         <p className="text-xs text-text-disabled">
           All CSVs include <code className="font-mono">participant_code</code> as the merge key.

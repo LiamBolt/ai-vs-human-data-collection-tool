@@ -11,6 +11,7 @@ import { ApiError } from '@/lib/queryClient'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { detectDeviceCategory, detectOsFamily, detectBrowserFamily } from '@/lib/utils'
 import type { CheckInResponse, AssignmentPayload, AssignmentSuggestion } from '@/types'
 
@@ -113,26 +114,23 @@ export default function CheckInPage() {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-6">
+    <div className="p-4 sm:p-6 flex flex-col gap-6">
       <h1 className="text-xl font-semibold text-text-primary">Check-in</h1>
 
       {!checkInResult ? (
         <Card>
           <CardHeader><h2 className="text-sm font-semibold text-text-primary">New participant</h2></CardHeader>
           <CardBody className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-text-primary">Batch</label>
-              <select
-                value={selectedBatchId}
-                onChange={(e) => setSelectedBatchId(e.target.value)}
-                className="bg-surface-card border border-border-subtle rounded-input px-3 py-2.5 text-base text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              >
-                <option value="">Select batch…</option>
-                {batches?.map((b) => (
-                  <option key={b.id} value={b.id}>{b.batch_code}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Batch"
+              value={selectedBatchId}
+              onChange={(e) => setSelectedBatchId(e.target.value)}
+            >
+              <option value="">Select batch…</option>
+              {batches?.map((b) => (
+                <option key={b.id} value={b.id}>{b.batch_code}</option>
+              ))}
+            </Select>
 
             <label className="flex items-start gap-3 min-h-[44px] p-3 rounded-input border border-border-subtle bg-surface-card cursor-pointer hover:bg-surface-hover transition-colors">
               <input
@@ -254,7 +252,7 @@ export default function CheckInPage() {
                       />
                     )}
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Button
                         type="button"
                         variant="secondary"

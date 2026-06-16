@@ -4,6 +4,7 @@ import { getBatches, getSites, createBatch, createSite } from '@/lib/api'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { RadioGroup } from '@/components/ui/RadioGroup'
 
 export default function BatchesPage() {
@@ -68,8 +69,8 @@ export default function BatchesPage() {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-6 max-w-4xl">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 flex flex-col gap-6 max-w-4xl">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-xl font-semibold text-text-primary">Batches</h1>
         <Button type="button" onClick={() => setShowForm((v) => !v)}>
           {showForm ? 'Cancel' : 'New batch'}
@@ -100,7 +101,7 @@ export default function BatchesPage() {
                     <p className="text-xs text-text-secondary">
                       A site is a location or context for a session — e.g. "Online / Remote" or "Lab Room 2".
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Input
                         label="Code"
                         hint="Short identifier, e.g. ONLINE"
@@ -123,16 +124,16 @@ export default function BatchesPage() {
                   </div>
                 )}
 
-                <select
+                <Select
+                  aria-label="Site"
                   value={siteId}
                   onChange={(e) => setSiteId(e.target.value)}
-                  className="bg-surface-card border border-border-subtle rounded-input px-3 py-2.5 text-base text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
                   <option value="">Select a site…</option>
                   {sites?.map((s) => (
                     <option key={s.id} value={s.id}>{s.site_name} ({s.site_code})</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <Input

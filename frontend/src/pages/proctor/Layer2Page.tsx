@@ -48,7 +48,7 @@ export default function Layer2Page() {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-6">
+    <div className="p-4 sm:p-6 flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold text-text-primary">Layer 2: Calibration log</h1>
         <p className="text-sm text-text-secondary">
@@ -73,7 +73,7 @@ export default function Layer2Page() {
                   <Input label="Participant ID" value={participantId} onChange={(e) => setParticipantId(e.target.value)} inputWidth="w-full" />
                   <Input label="Prompt log ID" hint="The ID from the AI tool's log export." value={promptLogId} onChange={(e) => setPromptLogId(e.target.value)} inputWidth="w-full" />
                   <Input label="Model name shown" hint="E.g. GPT-4o, Claude 3.5 Sonnet" value={modelName} onChange={(e) => setModelName(e.target.value)} inputWidth="w-full" />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label="Prompt count" value={promptCount} onChange={(e) => setPromptCount(e.target.value)} inputMode="numeric" inputWidth="w-full" />
                     <Input label="Time in AI tool (minutes)" value={timeInTool} onChange={(e) => setTimeInTool(e.target.value)} inputMode="numeric" inputWidth="w-full" />
                   </div>
