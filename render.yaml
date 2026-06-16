@@ -19,7 +19,7 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: free
+    plan: starter
     healthCheckPath: /api/v1/health
     envVars:
       - key: DATABASE_URL
