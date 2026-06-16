@@ -60,8 +60,9 @@ export default function App() {
       >
         Skip to content
       </a>
-      {/* Global theme switch — available on every screen */}
-      <ThemeToggle className="fixed top-4 right-4 z-50" />
+      {/* Global theme switch — sits in the top-right corner. On mobile it aligns
+          into the fixed top bars (z-40: above bars, below modals/open drawers). */}
+      <ThemeToggle className="fixed top-2.5 right-3 z-40 lg:top-4 lg:right-4" />
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
         <Routes>
           {/* ── Participant flow ────────────────────────────────────────────── */}

@@ -166,7 +166,41 @@ export const getMonitor = (batchId: string) =>
 export const getExportMeta = () =>
   request<ExportMeta[]>('GET', '/exports/meta', undefined, true)
 
-export const getExportUrl = (name: string) => `${BASE}/exports/${name}.csv`
+/**
+ * Download a CSV export. The export endpoints require a staff JWT, so we cannot
+ * use a plain `<a href>` (the browser would navigate without the Authorization
+ * header → 401 UNAUTHORIZED). Instead we fetch with the bearer token, then save
+ * the response as a Blob via a temporary object URL.
+ */
+export async function downloadExport(name: string): Promise<void> {
+  const res = await fetch(`${BASE}/exports/${name}.csv`, {
+    method: 'GET',
+    headers: { ...getAuthHeader() },
+  })
+
+  if (!res.ok) {
+    let code = 'UNKNOWN_ERROR'
+    let message = `HTTP ${res.status}`
+    try {
+      const json = (await res.json()) as { error?: { code?: string; message?: string } }
+      code = json.error?.code ?? code
+      message = json.error?.message ?? message
+    } catch {
+      // Body may not be JSON
+    }
+    throw new ApiError(res.status, code, message)
+  }
+
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${name}.csv`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
 
 // ── Rater ─────────────────────────────────────────────────────────────────────
 export const getRaterQueue = () =>

@@ -9,12 +9,13 @@
     <meta name="theme-color" content="#112330" />
     <title>AI vs the Brain</title>
     <script>
-      // Apply the saved/preferred theme before first paint to avoid a flash.
+      // Apply the saved theme before first paint to avoid a flash.
+      // Light is the default on every device; only a saved choice overrides it.
       (function () {
         try {
           var t = localStorage.getItem('aivb:theme');
           if (t !== 'light' && t !== 'dark') {
-            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            t = 'light';
           }
           document.documentElement.setAttribute('data-theme', t);
         } catch (e) {

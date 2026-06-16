@@ -35,7 +35,7 @@ export function SplitWorkspace({ leftPanel, rightPanel, contextSummary }: SplitW
           <button
             type="button"
             onClick={() => setContextExpanded((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+            className="w-full flex items-center justify-between pl-4 pr-14 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
             aria-expanded={contextExpanded}
           >
             <span className="text-sm font-medium text-text-primary truncate pr-4">

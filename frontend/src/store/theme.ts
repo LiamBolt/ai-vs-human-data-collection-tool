@@ -15,12 +15,9 @@ function readStoredTheme(): Theme | null {
 }
 
 function getInitialTheme(): Theme {
-  const stored = readStoredTheme()
-  if (stored) return stored
-  if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark'
-  }
-  return 'light'
+  // Light is the default for every device (desktop and mobile). A previously
+  // chosen theme is still respected; only the first-visit default is light.
+  return readStoredTheme() ?? 'light'
 }
 
 function applyTheme(theme: Theme): void {
