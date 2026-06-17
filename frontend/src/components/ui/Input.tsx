@@ -61,7 +61,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               ? 'border-error focus-visible:ring-error/40'
               : 'border-border-subtle focus-visible:ring-accent/40',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
-            'placeholder-transparent', // no placeholders per design rules
+            // No placeholders by default (design rule); when one is explicitly
+            // provided, render it muted like a standard professional placeholder.
+            props.placeholder ? 'placeholder:text-text-disabled' : 'placeholder-transparent',
             'transition-colors duration-150',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             className,

@@ -82,7 +82,7 @@ interface TaskPageProps {
 
 type Errors = Partial<Record<string, string>>
 
-export default function TaskPage({ session }: TaskPageProps) {
+function TaskPageInner({ session }: TaskPageProps) {
   const { taskCode = '' } = useParams<{ taskCode: string }>()
   const navigate = useNavigate()
   const { syncNow } = useSessionSync()
@@ -546,4 +546,14 @@ export default function TaskPage({ session }: TaskPageProps) {
       />
     </>
   )
+}
+
+export default function TaskPage({ session }: TaskPageProps) {
+  const { taskCode = '' } = useParams<{ taskCode: string }>()
+  // Remount per task: the same TaskPage route renders A1, A2, … so React keeps
+  // the instance (and its local field state) when only the param changes. Keying
+  // on taskCode forces a fresh mount, so each task's fields re-initialise from
+  // that task's own draft instead of carrying over the previous answers. The
+  // Zustand store and 30s sync live outside this tree and are unaffected.
+  return <TaskPageInner key={taskCode} session={session} />
 }

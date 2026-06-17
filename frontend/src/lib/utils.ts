@@ -79,7 +79,9 @@ export function findStoredParticipantCode(): string | null {
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
-      if (key?.startsWith('aivb:')) {
+      // `aivb:` namespaces both participant mirrors (aivb:<code>) and app prefs
+      // like the theme (aivb:theme). Only participant mirrors are codes.
+      if (key?.startsWith('aivb:') && key !== 'aivb:theme') {
         return key.slice(5)
       }
     }

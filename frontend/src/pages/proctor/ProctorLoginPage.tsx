@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { login } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { Input } from '@/components/ui/Input'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { Button } from '@/components/ui/Button'
 import { FormShell } from '@/components/ui/FormShell'
 
@@ -63,11 +64,10 @@ export default function ProctorLoginPage() {
             autoFocus
             inputWidth="w-full"
           />
-          <Input
+          <PasswordInput
             label="Password"
             id="password"
             name="password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             inputWidth="w-full"

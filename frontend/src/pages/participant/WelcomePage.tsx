@@ -79,6 +79,7 @@ export default function WelcomePage() {
               }}
               error={error ?? undefined}
               inputWidth="w-full"
+              placeholder="e.g. KLA-01-0001"
               autoFocus
               aria-label="Enter your Participant ID"
             />
