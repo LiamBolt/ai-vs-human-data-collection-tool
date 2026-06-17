@@ -27,7 +27,7 @@ export function ProgressStepper({
             <span className="text-text-primary font-medium">Session {session}</span>
             {' · '}
             Task {taskIndex} of {totalTasks}
-            {' — '}
+            {' · '}
             <span className="text-text-secondary">{taskCode} {taskFamily}</span>
           </p>
         </div>

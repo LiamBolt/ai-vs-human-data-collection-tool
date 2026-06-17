@@ -8,7 +8,7 @@ function DownloadButton({ name }: { name: string }) {
 
   const errorMessage =
     mutation.error instanceof ApiError && mutation.error.status === 401
-      ? 'Session expired — sign out and sign in again.'
+      ? 'Session expired · sign out and sign in again.'
       : mutation.isError
       ? 'Download failed. Please try again.'
       : null

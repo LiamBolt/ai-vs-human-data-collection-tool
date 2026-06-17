@@ -99,7 +99,7 @@ export default function BatchesPage() {
                 {showSiteForm && (
                   <div className="rounded-input border border-border-subtle bg-surface-hover p-3 flex flex-col gap-3">
                     <p className="text-xs text-text-secondary">
-                      A site is a location or context for a session — e.g. "Online / Remote" or "Lab Room 2".
+                      A site is a location or context for a session · e.g. "Online / Remote" or "Lab Room 2".
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Input

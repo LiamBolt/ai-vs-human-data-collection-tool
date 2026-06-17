@@ -93,12 +93,12 @@ recovery at least once (proposal resilience requirement).
 | ☐ | B6 | `/s1/task/A1…C2` | **6 tasks in order**: answer → justify (≥30 chars) → checks | S1 performance + behaviour; the COI/HES raw inputs (§3.5–§3.6) | `task_responses` ×6, telemetry | B5; tasks must be in order |
 | ☐ | B6-AI | (left panel, AI group only) | **Assistance ladder** L1→L2→L3, sequential; Copy used? Verified? + evidence | Captures **AI reliance + verification** = COI features (§3.6.2) | `assistance_level`, `requests_count`, `copy_used`, `verified`, hint_events | group = AI_ASSISTED |
 | ☐ | B6-C | (control group only) | Compliance tick "I did not use AI…" | Keeps control clean (no-AI condition) | `control_compliance` | group = CONTROL |
-| ☐ | B7 | `/s1/scales` | Likert grid: Effort + Engagement (+ **Trust, AI only**) | Self-reported effort/engagement → HES; trust → calibration (§3.6.4, D6) | `scale_responses` (S1) | B6 done |
+| ☐ | B7 | `/s1/scales` | Likert grid (1–5): **8-item** S1 questionnaire (Effort, Engagement, Confidence/understanding) + **4-item AI-usage** block (AI only) | Self-reported effort/engagement → HES; AI-usage → COI (proposal H.0.1–H.0.2) | `scale_responses` (S1) | B6 done |
 | ☐ | B8 | `/break` | Radial countdown, then **auto-advances to Session 2** | "Short rest between sessions" | `break_ends_at`, BREAK_END | B7 |
 | ☐ | B9 | `/s2/intro` | "AI removed for everyone." Arms paste-block + tab modal | Session 2 = the **independence test** (§3.2) | enforcement armed | B8 |
 | ☐ | B10 | `/s2/task/A3…B4` | **4 parallel tasks**, no AI panel, paste blocked | Delayed independent performance = **primary endpoint** Accuracy_S2 (§3.6.1) | `task_responses` ×4, infractions | B9; order enforced |
 | ☐ | B11 | `/s2/transfer` | "Did you use a method from S1?" Yes/No (+1 line) | Detects transfer of learned method (§3.5) | `transfer_prompt_used/_text` | B10 |
-| ☐ | B12 | `/s2/scales` | Likert: Effort + Engagement + **Independence** | S2 engagement + self-rated independence (§3.6.4, D6) | `scale_responses` (S2) | B11 |
+| ☐ | B12 | `/s2/scales` | Likert (1–5): **6-item** S2 questionnaire (Engagement + Independence) | S2 engagement → HES; self-rated independence (proposal H.0.3) | `scale_responses` (S2) | B11 |
 | ☐ | B13 | `/complete` | Thank-you; shows code for proctor checklist; status COMPLETED | Debrief + close-out (§3.11.4) | status COMPLETED | B12 |
 
 **Things to verify while clicking (these are the proposal's hard rules — "server is law"):**
@@ -164,44 +164,48 @@ Route: `/proctor/exports` (Admin/Proctor).
 - Form 0 covariates: age, education, English comfort, AI-use frequency, AI confidence (§3.4.4).
 - Six task families incl. arithmetic, percent/average, logic, time, interest, cost comparison; **parallel forms** in S2 (§3.5.3–§3.5.4).
 - Objective score + **justification** per task; per-task **copy / verified / verification-method / evidence / confidence / familiarity / self-check** = the COI/HES raw inputs (§3.6.2).
-- Post-block **Effort + Engagement** scales; **Trust** items AI-only (§3.6.4).
+- Post-block questionnaires at the proposal's Appendix H counts (S1 = 8 items; AI-usage = 4 items, AI-only; S2 = 6 items).
 - **Rubric 0–2 × 3** + blinded rater + **≥20% double-scoring** (§3.6.6, §3.10.2).
 - **Anonymity**: `participant_code` only; no names/IPs; `user_agent_raw` excluded from exports (§3.11.2).
 - **Tidy CSV exports + data dictionary**; telemetry of time, prompts, copy, verification, paste, tab (§3.7, H.0.6).
 
 ### ⚠️ Deviations (decide: keep + update the proposal text, OR change the tool)
 
-1. **AI mechanism — biggest one.** Proposal: AI group uses **live ChatGPT** under protocol (§3.5.5,
-   abstract). Tool: an **Offline Hint Bank** (structured ladder, levels 0–3) as the S1 AI proxy, plus
-   an optional **Layer-2** path where a proctor *manually* logs real ChatGPT usage. This is required by
-   the **offline-LAN constraint**, but it means S1 "AI use" ≠ ChatGPT. **Decide:** (a) accept the hint
-   bank as the controlled-AI condition and reword the proposal to describe it, or (b) add a real
-   ChatGPT integration for Layer-2 clinics (breaks pure offline). Today only (a) is implemented end-to-end.
+1. **AI mechanism — RESOLVED (keep tool, reword proposal).** Proposal text says the AI group uses
+   **live ChatGPT**. **Decision:** the tool is **not** integrated with a live AI. Session-1 assistance
+   stays the **Offline Hint Bank** (structured ladder, levels 0–3), and **real ChatGPT use is handled
+   by the existing Layer-2 path** — a **physical proctor supervises** the real AI session and **manually
+   logs** it (`layer2_logs`). This honours the offline-LAN constraint and needs no integration work.
+   → Reword the proposal to describe the hint bank + proctor-supervised Layer-2 mechanism. See
+   `SUBSTITUTIONS_TO_REVISIT.md`.
 
-2. **Session-2 delay — biggest one.** Proposal: S2 happens **24–72 hours later** (delayed
-   independence). Tool: a **5-minute break** (`BREAK_DURATION_SECONDS=300`) then **auto-advances to S2
-   in the same sitting**. There is **no 24–72h gate** in the code. The resume-by-code design *could*
-   support a real return (participant comes back next day, re-enters code), but nothing **stops** the
-   same-day flow or **schedules** the return. **Decide & change:** add a stop after B7/B8 — end the
-   sitting, mark "awaiting Session 2", and let the proctor (or a time gate) **release** S2 on the
-   return visit. As-is, you are measuring *immediate* independence, not *delayed* independence — which
-   changes the core finding.
+2. **Session-2 delay — DEFERRED (keep the 5-minute break for now).** Proposal: S2 is **24–72 hours
+   later**. Tool: a **5-minute break** (`BREAK_DURATION_SECONDS=300`) then auto-advance in the same
+   sitting. **Decision:** stay with the 5-minute break for now; the true 24–72h gate is a later change
+   (the resume-by-code design already supports a next-day return). Until then the tool measures
+   *immediate* independence — note that when reporting. See `SUBSTITUTIONS_TO_REVISIT.md`.
 
-3. **Warm-up count.** Proposal §3.4.4/§3.5.1: **two** warm-up tasks. Tool: **four** (B0-1…B0-4).
-   Harmless, but reword the proposal to "four" or drop two.
+3. **Warm-up count — keep tool's four; reword proposal.** Proposal §3.4.4/§3.5.1: **two** warm-up
+   tasks. Tool: **four** (B0-1…B0-4). Decision: keep four (more baseline signal); reword the proposal
+   to "four".
 
-4. **Questionnaire item counts.** Proposal Appendix H: S1 = **8 items**, S2 = **6 items**, plus a
-   separate **4-item AI-usage** questionnaire (H.0.2). Tool (from `instruments.py`): S1 = 6 (control) /
-   9 (AI incl. 3 trust); S2 = **9** (Effort 3 + Engagement 3 + Independence 3); AI usage captured via
-   **per-task fields + 3 trust items**, not a separate 4-item block. **Reconcile** the proposal's
-   Appendix H numbers with the actual D6 item set (the tool's set is the more precise one).
+4. **Questionnaire item counts — RESOLVED (tool now follows the proposal).** The tool now matches
+   proposal Appendix H: **S1 = 8 items** (Effort, Engagement, Confidence/understanding) for everyone;
+   a separate **4-item AI-usage block** (AI group only, H.0.2); **S2 = 6 items** (Engagement +
+   Independence, H.0.3). The *counts and themes* follow the proposal; the exact wording of the **added**
+   items is authored to the proposal themes and **must be finalised with the supervisor** before mass
+   collection (`SUBSTITUTIONS_TO_REVISIT.md`). The former S1 trust block and the S2 effort block were
+   dropped to hit the proposal counts.
 
-5. **Copy measure.** Proposal §3.6.2: `Copy_Rate = Copied_AI_Text / Total_Final_Text` (a **proportion**).
-   Tool: a **binary** "Copy used? Yes/No" tick (+ a `copied` flag on hints). So Copy_Rate will be
-   binary, not continuous. **Decide:** accept the binary proxy (document it) or capture copied-text
-   length to compute a true ratio.
+5. **Copy measure — RESOLVED (binary tick matches the proposal's operational definition).** Although
+   §3.6.3 describes Copy Rate conceptually as a proportion, the proposal's feature-engineering step
+   **§3.7.4 defines it operationally** as *"computed from the **copy tick** recorded by the participant
+   and spot checked by the researcher."* The tool's binary **"Copy used? Yes/No"** tick (plus the hint
+   `copied` flag) is exactly that input — so **no tool change is needed**. Document Copy_Rate as the
+   participant copy tick. (Capturing copied-text length for a true ratio would *exceed* the proposal's
+   stated method.)
 
-6. **Assignment method** — see §2 note (stratified vs simple-random).
+6. **Assignment method** — see §2 note (stratified vs simple-random); not changed.
 
 ### ❌ Not done yet (missing vs the proposal)
 
@@ -223,19 +227,28 @@ Route: `/proctor/exports` (Admin/Proctor).
 
 ---
 
-## 7. The decisions you must make (do these before mass data collection)
+## 7. Decisions — status (settled vs still open)
 
-These are the only blockers; everything else is "verify and tick".
+Most blockers are now settled in the tool; the rest are proposal-text edits or later work. Full
+rationale and the "remember to finish" list are in `SUBSTITUTIONS_TO_REVISIT.md`.
 
-1. **Delay (Deviation #2):** Same-sitting 5-min break, or true 24–72h return? → If 24–72h, the break/
-   release flow must change. *This affects the headline result, so decide first.*
-2. **AI mechanism (Deviation #1):** Is the Offline Hint Bank the official "AI condition", or must
-   Layer-2 use real ChatGPT? → Reword the proposal, or build the integration.
-3. **Questionnaires (Deviations #3–#4, Missing #1):** Lock the exact item sets so Appendix H and the
-   tool agree, including whether to add the H.0.5 1–6 offloading scale.
-4. **Copy measure (Deviation #5):** Binary tick (document as proxy) or true Copy_Rate.
+**Settled in the tool (no further tool change before piloting):**
+1. **AI mechanism (Deviation #1):** Offline Hint Bank for S1 + proctor-supervised **Layer-2** manual
+   logging for real ChatGPT; **no live integration**. → reword the proposal.
+2. **Questionnaire counts (Deviation #4):** tool now matches Appendix H (S1 = 8, AI-usage = 4 AI-only,
+   S2 = 6). → finalise the exact wording of the **added** items with the supervisor.
+3. **Copy measure (Deviation #5):** binary copy tick = the proposal's operational definition (§3.7.4).
+4. **Warm-up (Deviation #3):** keep four. → reword the proposal to "four".
 
-Once 1–4 are settled, this walkthrough becomes a clean pass/fail checklist for piloting.
+**Deferred (revisit before the real return-visit phase):**
+5. **Session-2 delay (Deviation #2):** staying with the 5-minute break for now; the true 24–72h gate
+   is future work. *This affects whether the headline result is immediate vs delayed independence.*
+
+**Still open (proposal / scope decision, no tool change made):**
+6. **H.0.5 offloading self-report** (1–6 scale, 4 items): not in the tool — decide add or drop.
+7. **Assignment method** (stratified vs simple-random) — see §2 note.
+
+Once 5–7 are settled, this walkthrough becomes a clean pass/fail checklist for piloting.
 
 ---
 

@@ -109,29 +109,41 @@ WARMUP_KEYS = {
 }
 
 # ── D6. Post-block scale items (Likert 1–5) ───────────────────────────────────
-# group: "ALL" shown to everyone; "AI_ASSISTED" shown to AI group only (S1 trust).
+# Item counts follow the research proposal Appendix H:
+#   H.0.1 Session-1 post-task questionnaire = 8 items (everyone)
+#   H.0.2 AI-usage questionnaire            = 4 items (AI group only)
+#   H.0.3 Session-2 post-task questionnaire = 6 items (everyone)
+# group: "ALL" shown to everyone; "AI_ASSISTED" shown to AI group only.
+# NOTE: the proposal specifies the *counts and themes* but not verbatim wording.
+# Items marked "added to match Appendix H" are authored to the proposal's themes
+# and must be finalised with the supervisor before mass collection — see
+# SUBSTITUTIONS_TO_REVISIT.md.
 SCALE_ITEMS: list[dict] = [
-    # Session 1 — Effort
+    # ── Session 1 post-task questionnaire — 8 items, everyone (H.0.1) ──
+    # Effort / focus
     {"item_code": "S1-E1", "session": 1, "group": "ALL", "text": "This task set required a lot of mental effort."},
     {"item_code": "S1-E2", "session": 1, "group": "ALL", "text": "I had to concentrate hard during the tasks."},
     {"item_code": "S1-E3", "session": 1, "group": "ALL", "text": "I felt mentally tired after completing the tasks."},
-    # Session 1 — Engagement
+    # Engagement
     {"item_code": "S1-H1", "session": 1, "group": "ALL", "text": "I stayed actively involved while solving the tasks."},
     {"item_code": "S1-H2", "session": 1, "group": "ALL", "text": "I tried to understand each step, not only the final answer."},
     {"item_code": "S1-H3", "session": 1, "group": "ALL", "text": "I checked my reasoning before submitting answers."},
-    # Session 1 — Trust and calibration (AI-assisted only)
-    {"item_code": "S1-T1", "session": 1, "group": "AI_ASSISTED", "text": "I accepted assistance quickly because it looked confident or authoritative."},
-    {"item_code": "S1-T2", "session": 1, "group": "AI_ASSISTED", "text": "I would have preferred to verify more, but time or effort made me skip verification."},
-    {"item_code": "S1-T3", "session": 1, "group": "AI_ASSISTED", "text": "I feel I could solve similar tasks later without AI help."},
-    # Session 2 — Effort
-    {"item_code": "S2-E1", "session": 2, "group": "ALL", "text": "This task set required a lot of mental effort."},
-    {"item_code": "S2-E2", "session": 2, "group": "ALL", "text": "I had to concentrate hard during the tasks."},
-    {"item_code": "S2-E3", "session": 2, "group": "ALL", "text": "I felt mentally tired after completing the tasks."},
-    # Session 2 — Engagement
+    # Confidence and understanding (added to match Appendix H's 8-item count)
+    {"item_code": "S1-C1", "session": 1, "group": "ALL", "text": "I felt confident that my answers were correct."},
+    {"item_code": "S1-U1", "session": 1, "group": "ALL", "text": "I understood the steps I used to solve the tasks."},
+    # ── AI-usage questionnaire — 4 items, AI group only (H.0.2) ──
+    # Replaces the former S1 trust block; added to match Appendix H themes
+    # (copied output, accepted without changes, relied on AI, verified AI results).
+    {"item_code": "S1-AI1", "session": 1, "group": "AI_ASSISTED", "text": "I copied text from the AI assistance directly into my answers."},
+    {"item_code": "S1-AI2", "session": 1, "group": "AI_ASSISTED", "text": "I accepted the AI's answers without changing them."},
+    {"item_code": "S1-AI3", "session": 1, "group": "AI_ASSISTED", "text": "I relied on the AI to do the thinking for me."},
+    {"item_code": "S1-AI4", "session": 1, "group": "AI_ASSISTED", "text": "I verified the AI's answers before using them."},
+    # ── Session 2 post-task questionnaire — 6 items, everyone (H.0.3) ──
+    # Engagement
     {"item_code": "S2-H1", "session": 2, "group": "ALL", "text": "I stayed actively involved while solving the tasks."},
     {"item_code": "S2-H2", "session": 2, "group": "ALL", "text": "I tried to understand each step, not only the final answer."},
     {"item_code": "S2-H3", "session": 2, "group": "ALL", "text": "I checked my reasoning before submitting answers."},
-    # Session 2 — Independence self-check
+    # Independence self-check
     {"item_code": "S2-I1", "session": 2, "group": "ALL", "text": "I felt the tasks were harder without AI than I expected."},
     {"item_code": "S2-I2", "session": 2, "group": "ALL", "text": "I could explain my reasoning clearly without AI help."},
     {"item_code": "S2-I3", "session": 2, "group": "ALL", "text": "I verified my answers more carefully in Session 2."},

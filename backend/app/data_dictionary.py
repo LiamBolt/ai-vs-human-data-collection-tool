@@ -74,7 +74,7 @@ DATA_DICTIONARY: list[DataDictRow] = [
     # scale_responses
     {"export": "scale_responses", "column": "participant_code", "type": "string", "allowed_values": "", "description": "Merge key."},
     {"export": "scale_responses", "column": "session_number", "type": "int", "allowed_values": "1|2", "description": "Session."},
-    {"export": "scale_responses", "column": "item_code", "type": "string", "allowed_values": "S1-E1..S2-I3", "description": "Likert item code."},
+    {"export": "scale_responses", "column": "item_code", "type": "string", "allowed_values": "S1-E1..E3|S1-H1..H3|S1-C1|S1-U1|S1-AI1..AI4|S2-H1..H3|S2-I1..I3", "description": "Likert item code (proposal Appendix H: S1 8-item; AI-usage 4-item, AI-only; S2 6-item)."},
     {"export": "scale_responses", "column": "rating", "type": "int", "allowed_values": "1..5", "description": "Likert rating."},
 
     # rater_scores

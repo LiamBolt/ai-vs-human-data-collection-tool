@@ -45,14 +45,14 @@ All decisions made where the spec was ambiguous. Each entry includes the section
 **Rationale:** A 5-minute wait during development is impractical.
 
 ## D008 — Scale items rendering order
-**Spec ref:** Module D (D6)
-**Decision:** Scale items are rendered in the order: Effort (E1, E2, E3) → Engagement (H1, H2, H3) → Trust (T1, T2, T3, AI group S1 only) / Independence (I1, I2, I3, S2 only). This matches the spec grouping.
-**Rationale:** Follows spec D6 ordering exactly.
+**Spec ref:** Module D (D6); superseded in part by D021 (proposal Appendix H alignment)
+**Decision:** Scale sections render in order. **S1:** Effort (E1–E3) → Engagement (H1–H3) → Confidence/understanding (C1, U1) → AI usage (AI1–AI4, AI group only). **S2:** Engagement (H1–H3) → Independence (I1–I3). See D021 for why the counts changed (trust block and S2 effort dropped to match the proposal).
+**Rationale:** Theme grouping preserved; counts now follow proposal Appendix H per D021.
 
 ## D009 — Participant code pre-fill on refresh
 **Spec ref:** Module C (C4): "the app's participant entry screen asks ONLY for the participant code"
-**Decision:** On app load, if `localStorage` contains a key matching `aivb:*`, the stored participant code is pre-populated in the code entry input as a convenience. The user must still press Continue to trigger `/session/resume`. The server remains authoritative for all state.
-**Rationale:** Improves UX for crash-recovery flow without contradicting the spec.
+**Decision:** On app load, if `localStorage` contains a participant key matching `aivb:*` **other than the reserved `aivb:theme`** (the theme preference shares the namespace), the stored participant code is pre-populated in the code entry input as a convenience. The user must still press Continue to trigger `/session/resume`. The server remains authoritative for all state. The field also shows a muted example placeholder (`e.g. KLA-01-0001`).
+**Rationale:** Improves UX for crash-recovery flow without contradicting the spec. The `aivb:theme` exclusion fixes a bug where the literal word "theme" pre-filled the participant ID box.
 
 ## D010 — docker-compose frontend-only during dev
 **Spec ref:** Module A (A2)
@@ -113,3 +113,9 @@ All decisions made where the spec was ambiguous. Each entry includes the section
 **Ambiguity:** The spec defines the `staff_users` table, the three roles, and a single bootstrap ADMIN, but lists **no** endpoint to create further staff — yet the protocol cannot run with only one admin (you need proctors to run clinics and ≥2 raters for blinded double-scoring).
 **Decision:** Added ADMIN-only endpoints under the existing auth module: `GET /auth/staff`, `POST /auth/staff` (username, password, role, optional `display_code`), `PATCH /auth/staff/{id}` (activate/deactivate). `display_code` auto-derives from the role count (e.g. `PROCTOR-02`, `RATER-01`) when omitted, never a real name (anonymity invariant). A new ADMIN-only "Staff" screen in the proctor console drives these; the nav entry and route are gated to ADMIN on the client, and `require_role(ADMIN)` re-enforces it server-side. No schema change — `staff_users` already had every column.
 **Rationale:** The simplest protocol-consistent way to make the study runnable; without it the platform is single-user and blinded double-scoring is impossible.
+
+## D021 — Questionnaire counts aligned to the proposal (Appendix H), not MEGA_PROMPT D6 (user-directed)
+**Spec ref:** Proposal Appendix H.0.1–H.0.3 and §3.7.4; overrides CLAUDE.md "verbatim from MEGA_PROMPT D6" for the post-block scales; supersedes part of D008.
+**Ambiguity / change:** The user directed that the **tool follow the proposal** for questionnaire item counts and the copy measure. The proposal gives **counts and themes only, not verbatim item text**; MEGA_PROMPT D6 has verbatim text at *different* counts.
+**Decision:** Post-block scales now match Appendix H counts: **S1 = 8** (Effort E1–E3, Engagement H1–H3, Confidence/understanding C1/U1, everyone); **AI-usage = 4** (`S1-AI1..AI4`, AI group only, replacing the old trust block); **S2 = 6** (Engagement H1–H3 + Independence I1–I3; the 3 S2 effort items were dropped). Implemented in `app/instruments.py` (`SCALE_ITEMS`, with `expected_scale_items` auto-deriving), mirrored in `frontend/.../ScalesPage.tsx`, and the `scale_responses.item_code` data-dictionary entry. No migration (long-format string codes; `item_code` ≤ 10 chars). **Copy measure:** unchanged — the binary "Copy used?" tick is the proposal's *operational* definition (§3.7.4 "computed from the copy tick recorded by the participant"), so no rebuild to a text proportion. The wording of the **added** items is authored to the proposal themes and is flagged for supervisor finalisation in `SUBSTITUTIONS_TO_REVISIT.md`.
+**Rationale:** The proposal's counts determine the downstream COI/HES feature sets and reliability analysis, so the tool must emit exactly those item sets. Counts/themes are objective; only the exact wording remains to be locked with the researcher.

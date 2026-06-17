@@ -6,7 +6,8 @@ import { useSessionStore } from '@/store/session'
 import { Button } from '@/components/ui/Button'
 import type { ScaleItem, SessionNumber } from '@/types'
 
-// Scale items verbatim from Module D6
+// Item counts follow the research proposal Appendix H (S1 = 8, AI-usage = 4 AI-only,
+// S2 = 6). Kept in sync with backend app/instruments.py SCALE_ITEMS.
 const S1_EFFORT: ScaleItem[] = [
   { item_code: 'S1-E1', text: 'This task set required a lot of mental effort.', session: 1, group: 'ALL' },
   { item_code: 'S1-E2', text: 'I had to concentrate hard during the tasks.', session: 1, group: 'ALL' },
@@ -17,15 +18,15 @@ const S1_ENGAGEMENT: ScaleItem[] = [
   { item_code: 'S1-H2', text: 'I tried to understand each step, not only the final answer.', session: 1, group: 'ALL' },
   { item_code: 'S1-H3', text: 'I checked my reasoning before submitting answers.', session: 1, group: 'ALL' },
 ]
-const S1_TRUST: ScaleItem[] = [
-  { item_code: 'S1-T1', text: 'I accepted assistance quickly because it looked confident or authoritative.', session: 1, group: 'AI_ASSISTED' },
-  { item_code: 'S1-T2', text: 'I would have preferred to verify more, but time or effort made me skip verification.', session: 1, group: 'AI_ASSISTED' },
-  { item_code: 'S1-T3', text: 'I feel I could solve similar tasks later without AI help.', session: 1, group: 'AI_ASSISTED' },
+const S1_CONFIDENCE: ScaleItem[] = [
+  { item_code: 'S1-C1', text: 'I felt confident that my answers were correct.', session: 1, group: 'ALL' },
+  { item_code: 'S1-U1', text: 'I understood the steps I used to solve the tasks.', session: 1, group: 'ALL' },
 ]
-const S2_EFFORT: ScaleItem[] = [
-  { item_code: 'S2-E1', text: 'This task set required a lot of mental effort.', session: 2, group: 'ALL' },
-  { item_code: 'S2-E2', text: 'I had to concentrate hard during the tasks.', session: 2, group: 'ALL' },
-  { item_code: 'S2-E3', text: 'I felt mentally tired after completing the tasks.', session: 2, group: 'ALL' },
+const S1_AI_USAGE: ScaleItem[] = [
+  { item_code: 'S1-AI1', text: 'I copied text from the AI assistance directly into my answers.', session: 1, group: 'AI_ASSISTED' },
+  { item_code: 'S1-AI2', text: "I accepted the AI's answers without changing them.", session: 1, group: 'AI_ASSISTED' },
+  { item_code: 'S1-AI3', text: 'I relied on the AI to do the thinking for me.', session: 1, group: 'AI_ASSISTED' },
+  { item_code: 'S1-AI4', text: "I verified the AI's answers before using them.", session: 1, group: 'AI_ASSISTED' },
 ]
 const S2_ENGAGEMENT: ScaleItem[] = [
   { item_code: 'S2-H1', text: 'I stayed actively involved while solving the tasks.', session: 2, group: 'ALL' },
@@ -139,8 +140,8 @@ export default function ScalesPage({ session }: ScalesPageProps) {
   const isAI = group === 'AI_ASSISTED'
   const items: ScaleItem[] =
     session === 1
-      ? [...S1_EFFORT, ...S1_ENGAGEMENT, ...(isAI ? S1_TRUST : [])]
-      : [...S2_EFFORT, ...S2_ENGAGEMENT, ...S2_INDEPENDENCE]
+      ? [...S1_EFFORT, ...S1_ENGAGEMENT, ...S1_CONFIDENCE, ...(isAI ? S1_AI_USAGE : [])]
+      : [...S2_ENGAGEMENT, ...S2_INDEPENDENCE]
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -187,7 +188,7 @@ export default function ScalesPage({ session }: ScalesPageProps) {
       <div className="max-w-xl mx-auto flex flex-col gap-8">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-medium uppercase tracking-wider text-text-disabled">
-            Session {session} — post-block scales
+            Session {session} · post-block scales
           </p>
           <h1 className="text-2xl font-bold tracking-tight text-text-primary">
             Rate your experience
@@ -208,13 +209,13 @@ export default function ScalesPage({ session }: ScalesPageProps) {
             <>
               <ScalesSection title="Effort" items={S1_EFFORT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
               <ScalesSection title="Engagement" items={S1_ENGAGEMENT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
+              <ScalesSection title="Confidence and understanding" items={S1_CONFIDENCE} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
               {isAI && (
-                <ScalesSection title="Trust and calibration" items={S1_TRUST} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
+                <ScalesSection title="AI usage" items={S1_AI_USAGE} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
               )}
             </>
           ) : (
             <>
-              <ScalesSection title="Effort" items={S2_EFFORT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
               <ScalesSection title="Engagement" items={S2_ENGAGEMENT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
               <ScalesSection title="Independence self-check" items={S2_INDEPENDENCE} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
             </>
@@ -229,7 +230,7 @@ export default function ScalesPage({ session }: ScalesPageProps) {
               {session === 1 ? 'Continue to break' : 'Complete the study'}
             </Button>
             <p className="text-xs text-center text-text-disabled">
-              Back is not available — answers are final.
+              Back is not available · answers are final.
             </p>
           </div>
         </form>

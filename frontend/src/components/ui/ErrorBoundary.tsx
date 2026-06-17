@@ -23,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col gap-2">
               <h1 className="text-xl font-semibold text-text-primary">Something went wrong</h1>
               <p className="text-sm text-text-secondary leading-relaxed">
-                Re-enter your Participant ID to continue — your progress is saved.
+                Re-enter your Participant ID to continue · your progress is saved.
               </p>
             </div>
             <button

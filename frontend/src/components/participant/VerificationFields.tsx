@@ -16,10 +16,10 @@ interface VerificationFieldsProps {
 }
 
 const METHOD_OPTIONS = [
-  { value: 'RECOMPUTE', label: 'Recompute — solved again independently' },
-  { value: 'ESTIMATE', label: 'Estimate — checked with a rough estimate' },
-  { value: 'ALT_METHOD', label: 'Alt method — used a different approach' },
-  { value: 'CONSISTENCY', label: 'Consistency — checked for logical consistency' },
+  { value: 'RECOMPUTE', label: 'Recompute · solved again independently' },
+  { value: 'ESTIMATE', label: 'Estimate · checked with a rough estimate' },
+  { value: 'ALT_METHOD', label: 'Alt method · used a different approach' },
+  { value: 'CONSISTENCY', label: 'Consistency · checked for logical consistency' },
   { value: 'OTHER', label: 'Other' },
 ]
 

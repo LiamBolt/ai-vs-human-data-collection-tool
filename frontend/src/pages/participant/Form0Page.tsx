@@ -246,7 +246,7 @@ export default function Form0Page() {
               Save &amp; continue
             </Button>
             <p className="text-xs text-center text-text-disabled">
-              Back is not available — answers are final once submitted.
+              Back is not available · answers are final once submitted.
             </p>
           </div>
         </form>

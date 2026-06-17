@@ -4,9 +4,9 @@ import { requestHint } from '@/lib/api'
 import { useSessionStore } from '@/store/session'
 
 const LEVEL_LABELS: Record<1 | 2 | 3, string> = {
-  1: 'Level 1 — Hint',
-  2: 'Level 2 — Scaffold',
-  3: 'Level 3 — Worked steps',
+  1: 'Level 1 · Hint',
+  2: 'Level 2 · Scaffold',
+  3: 'Level 3 · Worked steps',
 }
 
 interface AssistancePanelProps {

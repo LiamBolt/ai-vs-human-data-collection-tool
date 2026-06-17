@@ -35,7 +35,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="AI vs the Brain — Data Collection API",
+    title="AI vs the Brain · Data Collection API",
     version=settings.version,
     lifespan=lifespan,
 )

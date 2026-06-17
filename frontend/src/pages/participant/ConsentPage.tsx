@@ -93,7 +93,7 @@ export default function ConsentPage() {
               onClick={handleConsent}
               className="w-full"
             >
-              I agree — continue to the study
+              I agree · continue to the study
             </Button>
 
             <Button
@@ -102,7 +102,7 @@ export default function ConsentPage() {
               onClick={handleWithdraw}
               className="w-full text-text-disabled hover:text-text-secondary"
             >
-              I do not consent — exit
+              I do not consent · exit
             </Button>
           </div>
         </div>

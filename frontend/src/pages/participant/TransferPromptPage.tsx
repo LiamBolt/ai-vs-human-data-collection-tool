@@ -94,7 +94,7 @@ export default function TransferPromptPage() {
               Continue to final scales
             </Button>
             <p className="text-xs text-center text-text-disabled">
-              Back is not available — answers are final.
+              Back is not available · answers are final.
             </p>
           </div>
         </form>

@@ -52,7 +52,7 @@ export default function Session2IntroPage() {
         <Card>
           <CardBody>
             <p className="text-xs font-semibold uppercase tracking-wider text-text-disabled mb-3">
-              Important — tab switching
+              Important · tab switching
             </p>
             <p className="text-sm text-text-secondary leading-relaxed">
               Please stay on this page throughout Session 2. Switching tabs or windows will be
@@ -66,7 +66,7 @@ export default function Session2IntroPage() {
             Start Session 2
           </Button>
           <p className="text-xs text-center text-text-disabled">
-            Back is not available — answers are final once submitted.
+            Back is not available · answers are final once submitted.
           </p>
         </div>
       </div>

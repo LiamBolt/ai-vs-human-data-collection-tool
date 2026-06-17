@@ -49,10 +49,10 @@ export default function Session1IntroPage() {
           <div className="rounded-card border border-accent/30 bg-accent/5 px-5 py-4">
             <p className="text-sm font-medium text-accent mb-2">Assistance ladder</p>
             <ul className="flex flex-col gap-1 text-xs text-text-secondary">
-              <li><span className="font-medium text-text-primary">Level 0</span> — No assistance</li>
-              <li><span className="font-medium text-text-primary">Level 1</span> — Hint</li>
-              <li><span className="font-medium text-text-primary">Level 2</span> — Scaffold</li>
-              <li><span className="font-medium text-text-primary">Level 3</span> — Near-complete worked steps</li>
+              <li><span className="font-medium text-text-primary">Level 0</span> · No assistance</li>
+              <li><span className="font-medium text-text-primary">Level 1</span> · Hint</li>
+              <li><span className="font-medium text-text-primary">Level 2</span> · Scaffold</li>
+              <li><span className="font-medium text-text-primary">Level 3</span> · Near-complete worked steps</li>
             </ul>
           </div>
         )}
@@ -62,7 +62,7 @@ export default function Session1IntroPage() {
             Start Session 1
           </Button>
           <p className="text-xs text-center text-text-disabled">
-            Back is not available — answers are final once submitted.
+            Back is not available · answers are final once submitted.
           </p>
         </div>
       </div>

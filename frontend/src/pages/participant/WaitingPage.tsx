@@ -65,7 +65,7 @@ export default function WaitingPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-xl font-semibold text-text-primary">Thank you</h1>
           <p className="text-sm text-text-secondary leading-relaxed">
-            Please wait — your proctor will confirm your group assignment before the study
+            Please wait · your proctor will confirm your group assignment before the study
             begins.
           </p>
         </div>

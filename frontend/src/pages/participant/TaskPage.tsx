@@ -529,7 +529,7 @@ function TaskPageInner({ session }: TaskPageProps) {
             Save &amp; next
           </Button>
           <p className="text-xs text-center text-text-disabled">
-            Back is not available — answers are final once submitted.
+            Back is not available · answers are final once submitted.
           </p>
         </div>
       </form>
@@ -542,7 +542,7 @@ function TaskPageInner({ session }: TaskPageProps) {
       <SplitWorkspace
         leftPanel={leftPanel}
         rightPanel={rightPanel}
-        contextSummary={`${taskCode} — ${task.family}`}
+        contextSummary={`${taskCode} · ${task.family}`}
       />
     </>
   )
