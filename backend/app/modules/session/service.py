@@ -74,6 +74,41 @@ def _task_code_from_step(step: str) -> str | None:
     return None
 
 
+async def _resolve_task_step(db: AsyncSession, participant: Participant, step: str) -> str:
+    """Self-heal a task step against what is actually submitted.
+
+    If `step` points at a task, return the step for the first task in that
+    session that has NOT been submitted yet (or the post-session step if all
+    are done). Non-task steps pass through untouched. This guarantees the
+    server's step can never sit on, or be pushed backward onto, a completed
+    task — so a stale client sync or a resume can never strand a participant on
+    an already-submitted task (which would only ever return 409).
+    """
+    if step.startswith("s1_task_"):
+        prefix, order, session_number, after_step = "s1_task_", SESSION1_TASK_CODES, 1, "s1_scales"
+    elif step.startswith("s2_task_"):
+        prefix, order, session_number, after_step = "s2_task_", SESSION2_TASK_CODES, 2, "s2_transfer"
+    else:
+        return step
+
+    submitted = set(
+        (
+            await db.execute(
+                select(TaskResponse.task_code).where(
+                    TaskResponse.participant_id == participant.id,
+                    TaskResponse.session_number == session_number,
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    for code in order:
+        if code not in submitted:
+            return f"{prefix}{code}"
+    return after_step
+
+
 # ── Resume ────────────────────────────────────────────────────────────────────
 async def resume(db: AsyncSession, payload: schemas.ResumeRequest) -> schemas.ResumeResponse:
     participant = await repo.require_participant_by_code(db, payload.participant_code.strip())
@@ -83,6 +118,13 @@ async def resume(db: AsyncSession, payload: schemas.ResumeRequest) -> schemas.Re
             participant_id=participant.id, current_session=1, current_step="consent"
         )
         db.add(state)
+        await db.commit()
+
+    # Heal a stale/backward step (e.g. left on an already-submitted task) so the
+    # participant always resumes on the first task they still need to do.
+    healed = await _resolve_task_step(db, participant, state.current_step)
+    if healed != state.current_step:
+        state.current_step = healed
         await db.commit()
 
     current_task = None
@@ -109,7 +151,8 @@ async def sync_state(db: AsyncSession, payload: schemas.StateSyncRequest) -> Non
     if state is None:
         raise NotFoundError("Participant state not found.")
 
-    state.current_step = payload.current_step
+    # Never let a background sync push the step onto an already-completed task.
+    state.current_step = await _resolve_task_step(db, participant, payload.current_step)
     state.draft_responses = payload.draft_responses or {}
 
     await repo.persist_telemetry(
