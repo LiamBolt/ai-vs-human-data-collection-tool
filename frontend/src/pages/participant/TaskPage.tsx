@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { submitTask } from '@/lib/api'
+import { ApiError } from '@/lib/queryClient'
 import { useSessionStore } from '@/store/session'
 import { useSessionSync } from '@/hooks/useSessionSync'
 import { useTelemetry } from '@/hooks/useTelemetry'
@@ -16,7 +17,7 @@ import { RadioGroup } from '@/components/ui/RadioGroup'
 import { Input } from '@/components/ui/Input'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui/Button'
-import { getTaskIndex, getTotalTasks, getNextTaskRoute } from './routeUtils'
+import { getTaskIndex, getTotalTasks, getNextTaskRoute, getNextStep } from './routeUtils'
 import { TASK_DATA } from '@/lib/taskData'
 import type { VerificationMethod, TaskSubmitPayload } from '@/types'
 
@@ -133,6 +134,7 @@ export default function TaskPage({ session }: TaskPageProps) {
   const [confidence, setConfidence] = useState<number | null>((draft['confidence'] as number | undefined) ?? null)
   const [notes, setNotes] = useState<string>((draft['notes'] as string | undefined) ?? '')
   const [errors, setErrors] = useState<Errors>({})
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const setField = (field: string, value: unknown) => {
     setDraftAnswer(taskCode, field, value)
@@ -145,12 +147,31 @@ export default function TaskPage({ session }: TaskPageProps) {
 
   const field_id_for_task = (code: string) => `${code}-objective`
 
+  const advanceToNext = () => {
+    // Record the *next* step (not the task just finished) so the background
+    // state sync cannot push the server's step backward onto a completed task.
+    setStep(getNextStep(session, taskCode))
+    navigate(getNextTaskRoute(session, taskCode), { replace: true })
+  }
+
   const mutation = useMutation({
     mutationFn: (payload: TaskSubmitPayload) => submitTask(taskCode, payload),
-    onSuccess: () => {
-      const next = getNextTaskRoute(session, taskCode)
-      setStep(`${session === 1 ? 's1' : 's2'}_task_${taskCode}`)
-      navigate(next, { replace: true })
+    onSuccess: (data) => {
+      setStep(data.next_step)
+      navigate(getNextTaskRoute(session, taskCode), { replace: true })
+    },
+    onError: (err) => {
+      // This task was already submitted (e.g. resumed onto a completed task).
+      // Advancing is the correct, idempotent recovery — don't dead-end.
+      if (err instanceof ApiError && err.code === 'DUPLICATE_SUBMIT') {
+        advanceToNext()
+        return
+      }
+      setSubmitError(
+        err instanceof ApiError
+          ? err.message
+          : 'Could not save your answer. Check your connection and try again.',
+      )
     },
   })
 
@@ -205,6 +226,7 @@ export default function TaskPage({ session }: TaskPageProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError(null)
     if (!validate() || !participantCode) return
 
     recordEnd()
@@ -494,6 +516,11 @@ export default function TaskPage({ session }: TaskPageProps) {
 
         {/* Submit */}
         <div className="flex flex-col gap-2 pt-2">
+          {submitError && (
+            <div role="alert" className="rounded-input border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">
+              {submitError}
+            </div>
+          )}
           <Button
             type="submit"
             loading={mutation.isPending}

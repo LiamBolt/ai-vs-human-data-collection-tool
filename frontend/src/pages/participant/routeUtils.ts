@@ -53,6 +53,17 @@ export function getNextTaskRoute(
   }
 }
 
+export function getNextStep(session: 1 | 2, currentTaskCode: string): string {
+  if (session === 1) {
+    const idx = SESSION1_TASKS.indexOf(currentTaskCode as S1TaskCode)
+    if (idx === -1 || idx === SESSION1_TASKS.length - 1) return 's1_scales'
+    return `s1_task_${SESSION1_TASKS[idx + 1]}`
+  }
+  const idx = SESSION2_TASKS.indexOf(currentTaskCode as S2TaskCode)
+  if (idx === -1 || idx === SESSION2_TASKS.length - 1) return 's2_transfer'
+  return `s2_task_${SESSION2_TASKS[idx + 1]}`
+}
+
 export function getTaskIndex(session: 1 | 2, taskCode: string): number {
   const list = session === 1 ? SESSION1_TASKS : SESSION2_TASKS
   return (list.indexOf(taskCode as never) ?? -1) + 1
