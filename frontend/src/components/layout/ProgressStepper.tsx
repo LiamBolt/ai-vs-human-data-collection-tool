@@ -1,5 +1,6 @@
 import { SyncIndicator } from '@/components/ui/SyncIndicator'
 import { BrandLogo } from '@/components/ui/BrandLogo'
+import { StepProgress } from '@/components/ui/StepProgress'
 
 interface ProgressStepperProps {
   session: 1 | 2
@@ -9,6 +10,12 @@ interface ProgressStepperProps {
   taskFamily: string
 }
 
+/**
+ * Sticky task header. The brand, session, task counter and divided progress bar
+ * stay pinned to the top while the participant scrolls the form, so they always
+ * see where they are. The label is laid out on two compact lines so it fits a
+ * 360px phone without clipping words.
+ */
 export function ProgressStepper({
   session,
   taskIndex,
@@ -16,37 +23,25 @@ export function ProgressStepper({
   taskCode,
   taskFamily,
 }: ProgressStepperProps) {
-  const progressPct = (taskIndex / totalTasks) * 100
-
   return (
-    <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm pb-4 mb-6">
-      <div className="flex items-center justify-between mb-2 gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <BrandLogo size={26} className="shrink-0" />
-          <p className="text-sm text-text-secondary truncate">
-            <span className="text-text-primary font-medium">Session {session}</span>
-            {' · '}
-            Task {taskIndex} of {totalTasks}
-            {' · '}
-            <span className="text-text-secondary">{taskCode} {taskFamily}</span>
+    <div className="sticky top-0 z-20 -mx-4 px-4 sm:mx-0 sm:px-0 pt-3 pb-3 mb-5 bg-background/90 backdrop-blur-md border-b border-border-subtle">
+      <div className="flex items-center gap-2.5">
+        <BrandLogo size={24} className="shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-text-primary leading-tight">Session {session}</p>
+          <p className="text-xs text-text-secondary leading-tight truncate">
+            Task {taskIndex} of {totalTasks} · {taskCode} {taskFamily}
           </p>
         </div>
         <SyncIndicator />
       </div>
 
-      <div
-        className="h-0.5 w-full bg-border-subtle rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={taskIndex}
-        aria-valuemin={0}
-        aria-valuemax={totalTasks}
-        aria-label={`Task ${taskIndex} of ${totalTasks}`}
-      >
-        <div
-          className="h-full bg-accent rounded-full transition-[width] duration-enter ease-smooth"
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
+      <StepProgress
+        total={totalTasks}
+        current={taskIndex}
+        ariaLabel={`Task ${taskIndex} of ${totalTasks}`}
+        className="mt-2.5"
+      />
     </div>
   )
 }

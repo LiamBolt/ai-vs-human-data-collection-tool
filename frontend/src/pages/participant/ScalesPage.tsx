@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { submitScales } from '@/lib/api'
 import { useSessionStore } from '@/store/session'
 import { Button } from '@/components/ui/Button'
+import { FormProgressHeader } from '@/components/layout/FormProgressHeader'
 import type { ScaleItem, SessionNumber } from '@/types'
 
 // Item counts follow the research proposal Appendix H (S1 = 8, AI-usage = 4 AI-only,
@@ -56,10 +57,13 @@ interface ScaleRowProps {
 
 function ScaleRow({ item, value, onChange, error }: ScaleRowProps) {
   return (
-    <div className={[
-      'flex flex-col gap-3 px-4 py-4 rounded-card border',
-      error ? 'border-error' : 'border-border-subtle bg-surface-card',
-    ].join(' ')}>
+    <div
+      id={`scale-${item.item_code}`}
+      className={[
+        'flex flex-col gap-3 px-4 py-4 rounded-card border scroll-mt-44',
+        error ? 'border-error' : 'border-border-subtle bg-surface-card',
+      ].join(' ')}
+    >
       <p className="text-sm text-text-primary leading-relaxed">{item.text}</p>
       <div className="flex gap-2 flex-wrap" role="radiogroup" aria-label={item.text}>
         {[1, 2, 3, 4, 5].map((n) => (
@@ -96,35 +100,13 @@ function ScaleRow({ item, value, onChange, error }: ScaleRowProps) {
   )
 }
 
-interface ScalesSectionProps {
-  title: string
-  items: ScaleItem[]
-  ratings: Record<string, number>
-  onRate: (code: string, value: number) => void
-  errorCodes: string[]
-}
-
-function ScalesSection({ title, items, ratings, onRate, errorCodes }: ScalesSectionProps) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-        {title}
-      </h2>
-      {items.map((item) => (
-        <ScaleRow
-          key={item.item_code}
-          item={item}
-          value={ratings[item.item_code] ?? null}
-          onChange={(v) => onRate(item.item_code, v)}
-          error={errorCodes.includes(item.item_code)}
-        />
-      ))}
-    </section>
-  )
-}
-
 interface ScalesPageProps {
   session: SessionNumber
+}
+
+interface Section {
+  title: string
+  items: ScaleItem[]
 }
 
 export default function ScalesPage({ session }: ScalesPageProps) {
@@ -136,12 +118,31 @@ export default function ScalesPage({ session }: ScalesPageProps) {
 
   const [ratings, setRatings] = useState<Record<string, number>>({})
   const [errorCodes, setErrorCodes] = useState<string[]>([])
+  const [sectionIdx, setSectionIdx] = useState(0)
 
   const isAI = group === 'AI_ASSISTED'
-  const items: ScaleItem[] =
+
+  // One step per section so the participant rates a few related items at a time.
+  const sections: Section[] =
     session === 1
-      ? [...S1_EFFORT, ...S1_ENGAGEMENT, ...S1_CONFIDENCE, ...(isAI ? S1_AI_USAGE : [])]
-      : [...S2_ENGAGEMENT, ...S2_INDEPENDENCE]
+      ? [
+          { title: 'Effort', items: S1_EFFORT },
+          { title: 'Engagement', items: S1_ENGAGEMENT },
+          { title: 'Confidence and understanding', items: S1_CONFIDENCE },
+          ...(isAI ? [{ title: 'AI usage', items: S1_AI_USAGE }] : []),
+        ]
+      : [
+          { title: 'Engagement', items: S2_ENGAGEMENT },
+          { title: 'Independence self-check', items: S2_INDEPENDENCE },
+        ]
+
+  const items: ScaleItem[] = sections.flatMap((s) => s.items)
+  const section = sections[sectionIdx]
+  const isLast = sectionIdx === sections.length - 1
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [sectionIdx])
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -166,12 +167,32 @@ export default function ScalesPage({ session }: ScalesPageProps) {
     },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const missing = items.filter((i) => !(i.item_code in ratings)).map((i) => i.item_code)
+  const missingIn = (secItems: ScaleItem[]) =>
+    secItems.filter((i) => !(i.item_code in ratings)).map((i) => i.item_code)
+
+  const handleContinue = () => {
+    const missing = missingIn(section.items)
     if (missing.length > 0) {
       setErrorCodes(missing)
       document.getElementById(`scale-${missing[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    setErrorCodes([])
+    setSectionIdx((i) => i + 1)
+  }
+
+  const handleBack = () => {
+    setErrorCodes([])
+    setSectionIdx((i) => Math.max(0, i - 1))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const missingAll = missingIn(items)
+    if (missingAll.length > 0) {
+      setErrorCodes(missingAll)
+      const firstBad = sections.findIndex((s) => s.items.some((i) => missingAll.includes(i.item_code)))
+      if (firstBad >= 0) setSectionIdx(firstBad)
       return
     }
     setErrorCodes([])
@@ -183,56 +204,66 @@ export default function ScalesPage({ session }: ScalesPageProps) {
     setErrorCodes((e) => e.filter((c) => c !== code))
   }
 
+  const sectionHasError = section.items.some((i) => errorCodes.includes(i.item_code))
+
   return (
-    <div className="min-h-screen bg-background py-10 px-6">
-      <div className="max-w-xl mx-auto flex flex-col gap-8">
-        <div className="flex flex-col gap-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-text-disabled">
-            Session {session} · post-block scales
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-            Rate your experience
-          </h1>
-          <p className="text-sm text-text-secondary">
-            Answer how you felt about the tasks you just completed.
-          </p>
-        </div>
+    <div className="min-h-screen">
+      <div className="max-w-xl mx-auto px-6 sm:px-8 pb-12">
+        <FormProgressHeader
+          phase={session === 1 ? 'reflect1' : 'reflect2'}
+          eyebrow={`Session ${session} · reflection`}
+          stepTitle={section.title}
+          currentStep={sectionIdx}
+          totalSteps={sections.length}
+        />
 
-        {errorCodes.length > 0 && (
-          <div role="alert" className="rounded-card border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">
-            Please rate all items before continuing.
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-8" noValidate>
-          {session === 1 ? (
-            <>
-              <ScalesSection title="Effort" items={S1_EFFORT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
-              <ScalesSection title="Engagement" items={S1_ENGAGEMENT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
-              <ScalesSection title="Confidence and understanding" items={S1_CONFIDENCE} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
-              {isAI && (
-                <ScalesSection title="AI usage" items={S1_AI_USAGE} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
-              )}
-            </>
-          ) : (
-            <>
-              <ScalesSection title="Engagement" items={S2_ENGAGEMENT} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
-              <ScalesSection title="Independence self-check" items={S2_INDEPENDENCE} ratings={ratings} onRate={handleRate} errorCodes={errorCodes} />
-            </>
-          )}
-
-          <div className="flex flex-col gap-2 pt-2">
-            <Button
-              type="submit"
-              loading={mutation.isPending}
-              className="w-full"
-            >
-              {session === 1 ? 'Continue to break' : 'Complete the study'}
-            </Button>
-            <p className="text-xs text-center text-text-disabled">
-              Back is not available · answers are final.
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-6" noValidate>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-lg font-semibold tracking-tight text-text-primary">{section.title}</h1>
+            <p className="text-sm text-text-secondary">
+              Rate how much you agree, based on the tasks you just completed.
             </p>
           </div>
+
+          {sectionHasError && (
+            <div role="alert" className="rounded-card border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">
+              Please rate every item in this step before continuing.
+            </div>
+          )}
+
+          <section key={section.title} className="flex flex-col gap-3 animate-[fadeInUp_220ms_ease-out]">
+            {section.items.map((item) => (
+              <ScaleRow
+                key={item.item_code}
+                item={item}
+                value={ratings[item.item_code] ?? null}
+                onChange={(v) => handleRate(item.item_code, v)}
+                error={errorCodes.includes(item.item_code)}
+              />
+            ))}
+          </section>
+
+          <div className="flex items-center gap-3 pt-2">
+            {sectionIdx > 0 && (
+              <Button type="button" variant="secondary" onClick={handleBack} className="shrink-0">
+                Back
+              </Button>
+            )}
+            {isLast ? (
+              <Button type="submit" loading={mutation.isPending} className="flex-1">
+                {session === 1 ? 'Continue to break' : 'Complete the study'}
+              </Button>
+            ) : (
+              <Button type="button" onClick={handleContinue} className="flex-1">
+                Continue
+              </Button>
+            )}
+          </div>
+          {isLast && (
+            <p className="text-xs text-center text-text-disabled">
+              Back is not available after this · answers are final.
+            </p>
+          )}
         </form>
       </div>
     </div>

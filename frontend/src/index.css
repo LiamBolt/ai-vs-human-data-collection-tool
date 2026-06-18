@@ -53,6 +53,19 @@
     font-family: inherit;
   }
 
+  /* Native <select> popup list: themed so the open menu matches the design
+     system instead of falling back to the bare OS palette (white-on-white in
+     light, system-grey in dark). Chrome/Firefox honour these; Safari uses its
+     own popover but inherits the colours. */
+  select option,
+  select optgroup {
+    background-color: var(--surface-card);
+    color: var(--text-primary);
+  }
+  select option:disabled {
+    color: var(--text-disabled);
+  }
+
   /* Consistent, professional micro-transitions on every interactive element.
      Components that set their own `transition-*` utilities override this (class
      selectors win over element selectors); the reduced-motion block below
@@ -112,4 +125,17 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+}
+
+/* Motion primitives — referenced by `animate-[fadeIn_…]` / `animate-[fadeInUp_…]`
+   utilities. Defined here (not just in tailwind) so arbitrary-value animations
+   resolve to real keyframes instead of silently no-op'ing. */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

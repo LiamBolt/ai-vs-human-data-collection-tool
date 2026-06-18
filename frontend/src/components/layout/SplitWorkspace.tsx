@@ -68,9 +68,12 @@ export function SplitWorkspace({ leftPanel, rightPanel, contextLabel = 'Question
         </main>
       </div>
 
-      {/* Mobile: one screen at a time, switched from the bottom tab bar */}
+      {/* Mobile: one screen at a time, switched from the bottom tab bar.
+          The body scrolls (no overflow container here) so the task header's
+          `sticky top-0` pins to the viewport instead of being trapped in — and
+          scrolled away with — an inner scroll box. */}
       <div className="lg:hidden flex flex-col min-h-screen">
-        <main className="flex-1 overflow-y-auto pb-28">
+        <main className="flex-1 pb-28">
           {view === 'task' ? (
             <div key="task" className="px-4 py-5 animate-[fadeIn_180ms_ease-out]">
               {rightPanel}

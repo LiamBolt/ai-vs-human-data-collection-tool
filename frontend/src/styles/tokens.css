@@ -35,6 +35,10 @@
   --glass-highlight: rgba(255, 255, 255, 0.06);
   --glass-shadow:    0 8px 32px rgba(3, 12, 20, 0.45);
   --glass-blur:      16px;
+
+  /* Visible outline for the brand logo chip in both themes (the chip is always
+     white, so it needs a defined edge against the surface behind it). */
+  --logo-ring:       rgba(255, 255, 255, 0.22);
 }
 
 [data-theme='light'] {
@@ -64,4 +68,8 @@
   --glass-highlight: rgba(255, 255, 255, 0.60);
   --glass-shadow:    0 8px 32px rgba(15, 34, 48, 0.12);
   --glass-blur:      16px;
+
+  /* Darker, clearly visible edge so the white logo chip reads against the light
+     background instead of disappearing into it. */
+  --logo-ring:       #B7C6D4;
 }

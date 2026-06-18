@@ -16,7 +16,7 @@ export function BrandLogo({ size = 40, withWordmark = false, subtitle, className
   return (
     <div className={['inline-flex items-center gap-3', className].join(' ')}>
       <span
-        className="inline-flex items-center justify-center rounded-card bg-white shadow-glass ring-1 ring-glass-border shrink-0"
+        className="inline-flex items-center justify-center rounded-card bg-white shadow-glass ring-1 ring-[var(--logo-ring)] shrink-0"
         style={{ width: size, height: size, padding: Math.round(size * 0.12) }}
       >
         <img
