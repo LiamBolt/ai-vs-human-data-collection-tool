@@ -20,6 +20,7 @@ export function AssistancePanel({ taskCode, participantCode }: AssistancePanelPr
   const pushTelemetry = useSessionStore((s) => s.pushTelemetry)
 
   const [loadingLevel, setLoadingLevel] = useState<1 | 2 | 3 | null>(null)
+  const [copiedLevel, setCopiedLevel] = useState<1 | 2 | 3 | null>(null)
   const revealRefs = useRef<Partial<Record<1 | 2 | 3, HTMLDivElement | null>>>({})
   const intersectionTimers = useRef<Partial<Record<1 | 2 | 3, number>>>({})
 
@@ -69,6 +70,7 @@ export function AssistancePanel({ taskCode, participantCode }: AssistancePanelPr
     if (!text) return
     navigator.clipboard.writeText(text).catch(() => undefined)
     pushTelemetry('HINT_COPY', taskCode, { level })
+    setCopiedLevel(level)
     updateHintState(taskCode, { copied: true })
   }
 
@@ -178,7 +180,7 @@ export function AssistancePanel({ taskCode, participantCode }: AssistancePanelPr
                         'border border-border-subtle text-text-secondary',
                         'hover:bg-surface-card hover:text-text-primary transition-colors duration-150',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
-                        hintState?.copied ? 'text-warning border-warning/30' : '',
+                        copiedLevel === level ? 'text-warning border-warning/30' : '',
                       ].join(' ')}
                     >
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

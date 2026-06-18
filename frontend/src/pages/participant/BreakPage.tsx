@@ -4,14 +4,17 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { startBreak, getBreakStatus, completeBreak } from '@/lib/api'
 import { useSessionStore } from '@/store/session'
 import { useBreakTimer } from '@/hooks/useBreakTimer'
-import { formatMMSS, playChime } from '@/lib/utils'
+import { formatMMSS, playChime, findStoredParticipantCode } from '@/lib/utils'
 
 const RING_RADIUS = 100
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 
 export default function BreakPage() {
   const navigate = useNavigate()
-  const participantCode = useSessionStore((s) => s.participant_code)
+  // Fall back to the stored code so a hard refresh on /break still drives the
+  // timer even before the store has rehydrated from /session/resume.
+  const storeCode = useSessionStore((s) => s.participant_code)
+  const participantCode = storeCode ?? findStoredParticipantCode()
   const breakEndsAt = useSessionStore((s) => s.break_ends_at)
   const setBreakEndsAt = useSessionStore((s) => s.setBreakEndsAt)
   const setStep = useSessionStore((s) => s.setStep)
@@ -107,7 +110,6 @@ export default function BreakPage() {
               strokeLinecap="round"
               strokeDasharray={RING_CIRCUMFERENCE}
               strokeDashoffset={strokeOffset}
-              className="transition-[stroke-dashoffset] duration-1000"
             />
           </svg>
 

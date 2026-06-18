@@ -82,6 +82,12 @@ export interface HintTaskState {
 }
 
 // ── API request/response shapes ───────────────────────────────────────────────
+export interface HintTaskProgress {
+  unlocked_level: number
+  request_count: number
+  hints: Partial<Record<1 | 2 | 3, string>>
+}
+
 export interface SessionResumeResponse {
   participant_code: string
   status: ParticipantStatus
@@ -91,6 +97,7 @@ export interface SessionResumeResponse {
   draft_responses: Record<string, unknown>
   break_ends_at: string | null
   current_task: Task | null
+  hint_progress?: Record<string, HintTaskProgress>
 }
 
 export interface StateSyncPayload {

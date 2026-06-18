@@ -9,6 +9,7 @@ import type {
   TelemetryEvent,
   TelemetryEventType,
   HintTaskState,
+  HintTaskProgress,
   TimerMarks,
 } from '@/types'
 
@@ -53,6 +54,7 @@ interface SessionStore {
   setBreakEndsAt: (endsAt: string | null) => void
   setSession2Enforcement: (active: boolean) => void
   updateHintState: (taskCode: string, update: Partial<HintTaskState>) => void
+  restoreHintState: (progress: Record<string, HintTaskProgress>) => void
   setTimerMark: (taskCode: string, marks: Partial<TimerMarks>) => void
   clearParticipant: () => void
 }
@@ -156,6 +158,22 @@ export const useSessionStore = create<SessionStore>()(
             [taskCode]: { ...existing, ...update },
           },
         }
+      }),
+
+    restoreHintState: (progress) =>
+      set({
+        hint_state: Object.fromEntries(
+          Object.entries(progress).map(([task, p]) => [
+            task,
+            {
+              unlocked_level: p.unlocked_level,
+              hints: p.hints,
+              copied: false,
+              request_count: p.request_count,
+              reveal_timestamps: {},
+            },
+          ]),
+        ),
       }),
 
     setTimerMark: (taskCode, marks) =>

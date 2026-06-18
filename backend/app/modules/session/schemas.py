@@ -47,6 +47,14 @@ class ResumeRequest(BaseModel):
     participant_code: str = Field(min_length=1, max_length=40)
 
 
+class HintTaskProgress(BaseModel):
+    """Per-task assistance state so the panel survives a refresh without
+    re-requesting (which would 403) or over-unlocking."""
+    unlocked_level: int
+    request_count: int
+    hints: dict[int, str]
+
+
 class ResumeResponse(BaseModel):
     participant_code: str
     status: ParticipantStatus
@@ -56,6 +64,7 @@ class ResumeResponse(BaseModel):
     draft_responses: dict[str, Any]
     break_ends_at: datetime | None
     current_task: PublicTaskOut | None
+    hint_progress: dict[str, HintTaskProgress] = Field(default_factory=dict)
 
 
 class StateSyncRequest(BaseModel):

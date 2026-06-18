@@ -15,6 +15,7 @@ export default function WelcomePage() {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const setParticipant = useSessionStore((s) => s.setParticipant)
+  const restoreHintState = useSessionStore((s) => s.restoreHintState)
 
   const mutation = useMutation({
     mutationFn: () => resumeSession(code.trim()),
@@ -28,6 +29,7 @@ export default function WelcomePage() {
         data.break_ends_at,
         data.draft_responses,
       )
+      if (data.hint_progress) restoreHintState(data.hint_progress)
       const route = resolveStepRoute(data.status, data.current_step)
       navigate(route, { replace: true })
     },

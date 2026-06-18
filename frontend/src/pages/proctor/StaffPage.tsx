@@ -151,8 +151,8 @@ export default function StaffPage() {
                 <button
                   type="button"
                   onClick={() => activeMutation.mutate({ id: member.id, isActive: !member.is_active })}
-                  disabled={activeMutation.isPending}
-                  className="text-xs text-accent hover:underline focus-visible:outline-none focus-visible:underline disabled:opacity-50"
+                  disabled={activeMutation.isPending && activeMutation.variables?.id === member.id}
+                  className="text-xs text-accent hover:underline focus-visible:outline-none focus-visible:underline disabled:opacity-50 transition-opacity duration-150"
                 >
                   {member.is_active ? 'Deactivate' : 'Reactivate'}
                 </button>

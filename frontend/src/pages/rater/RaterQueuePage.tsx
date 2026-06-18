@@ -176,7 +176,7 @@ export default function RaterQueuePage() {
 
       {/* Mobile drawer + backdrop (< lg) */}
       {drawerOpen && (
-        <div className="lg:hidden fixed inset-0 z-40">
+        <div className="lg:hidden fixed inset-0 z-50">
           <div
             className="absolute inset-0 bg-background/70 backdrop-blur-sm"
             onClick={() => setDrawerOpen(false)}

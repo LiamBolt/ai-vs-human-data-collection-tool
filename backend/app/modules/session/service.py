@@ -132,6 +132,25 @@ async def resume(db: AsyncSession, payload: schemas.ResumeRequest) -> schemas.Re
     if code is not None:
         current_task = await _task_out(db, code)
 
+    # Restore assistance progress so the panel survives a refresh (otherwise the
+    # client re-requests already-unlocked levels and the server returns 403).
+    hint_rows = (
+        await db.execute(
+            select(HintEvent.task_code, func.max(HintEvent.level), func.count())
+            .where(HintEvent.participant_id == participant.id)
+            .group_by(HintEvent.task_code)
+        )
+    ).all()
+    hint_progress: dict[str, schemas.HintTaskProgress] = {}
+    for task_code, max_level, count in hint_rows:
+        lvl = int(max_level)
+        task_hints = HINTS.get(task_code, {})
+        hint_progress[task_code] = schemas.HintTaskProgress(
+            unlocked_level=lvl,
+            request_count=int(count),
+            hints={i: task_hints[i] for i in range(1, lvl + 1) if i in task_hints},
+        )
+
     return schemas.ResumeResponse(
         participant_code=participant.participant_code,
         status=participant.status,
@@ -141,6 +160,7 @@ async def resume(db: AsyncSession, payload: schemas.ResumeRequest) -> schemas.Re
         draft_responses=state.draft_responses or {},
         break_ends_at=state.break_ends_at,
         current_task=current_task,
+        hint_progress=hint_progress,
     )
 
 
@@ -375,12 +395,18 @@ async def request_hint(db: AsyncSession, payload: schemas.HintRequest) -> schema
             )
         )
     ).scalar_one()
-    if payload.level != int(unlocked) + 1:
+    # Skipping ahead past the next level is forbidden. Re-requesting a level that
+    # is already unlocked (e.g. after a refresh restored the panel) just returns
+    # the text again — no new HintEvent, no inflated request count.
+    if payload.level > int(unlocked) + 1:
         raise ForbiddenError("Assistance levels must be unlocked in order.", code="HINT_OUT_OF_ORDER")
 
     hint_text = HINTS.get(payload.task_code, {}).get(payload.level)
     if hint_text is None:
         raise NotFoundError("Hint not found.")
+
+    if payload.level <= int(unlocked):
+        return schemas.HintResponse(hint_text=hint_text, level=payload.level, task_code=payload.task_code)
 
     request_number = (
         await db.execute(
