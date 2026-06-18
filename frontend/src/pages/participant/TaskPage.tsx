@@ -542,7 +542,7 @@ function TaskPageInner({ session }: TaskPageProps) {
       <SplitWorkspace
         leftPanel={leftPanel}
         rightPanel={rightPanel}
-        contextSummary={`${taskCode} · ${task.family}`}
+        contextLabel={showAssistance ? 'Question & hints' : 'Question & rules'}
       />
     </>
   )

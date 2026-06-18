@@ -30,6 +30,11 @@ interface ThemeStore {
   theme: Theme
   setTheme: (theme: Theme) => void
   toggleTheme: () => void
+  // When a screen owns the brightness control in its own mobile chrome (e.g. the
+  // task workspace bottom bar), it hides the global floating toggle on mobile so
+  // the two don't both appear. Desktop is unaffected.
+  floatingToggleHidden: boolean
+  setFloatingToggleHidden: (hidden: boolean) => void
 }
 
 export const useThemeStore = create<ThemeStore>((set, get) => ({
@@ -44,6 +49,8 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
     set({ theme })
   },
   toggleTheme: () => get().setTheme(get().theme === 'dark' ? 'light' : 'dark'),
+  floatingToggleHidden: false,
+  setFloatingToggleHidden: (hidden) => set({ floatingToggleHidden: hidden }),
 }))
 
 // Ensure the DOM matches the resolved initial theme (the inline script in
