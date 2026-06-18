@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/store/auth'
+import { useThemeStore } from '@/store/theme'
+import { getAwaitingCount } from '@/lib/api'
 import { BrandLogo } from '@/components/ui/BrandLogo'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 const NAV_ITEMS = [
   { to: '/proctor/batches', label: 'Batches' },
@@ -20,7 +24,23 @@ export default function ProctorLayout() {
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const displayCode = useAuthStore((s) => s.display_code)
   const role = useAuthStore((s) => s.role)
+  const setFloatingToggleMode = useThemeStore((s) => s.setFloatingToggleMode)
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // The console hosts brightness in its sidebar → hide the floating toggle.
+  useEffect(() => {
+    setFloatingToggleMode('hide')
+    return () => setFloatingToggleMode('show')
+  }, [setFloatingToggleMode])
+
+  // Count of participants awaiting a group. Polling doubles as the proctor
+  // "presence" heartbeat the server uses to decide whether to auto-assign.
+  const { data: awaiting } = useQuery({
+    queryKey: ['awaiting-count'],
+    queryFn: getAwaitingCount,
+    refetchInterval: 8000,
+  })
+  const awaitingCount = awaiting?.count ?? 0
 
   const handleSignOut = () => {
     clearAuth()
@@ -52,15 +72,26 @@ export default function ProctorLayout() {
               ].join(' ')
             }
           >
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {item.to === '/proctor/checkin' && awaitingCount > 0 && (
+              <span
+                className="ml-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-[10px] font-semibold text-accent-contrast"
+                aria-label={`${awaitingCount} awaiting group assignment`}
+              >
+                {awaitingCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </div>
 
-      <div className="px-5 py-4 border-t border-border-subtle flex flex-col gap-2">
-        <p className="text-xs text-text-disabled">
-          {role} · {displayCode}
-        </p>
+      <div className="px-5 py-4 border-t border-border-subtle flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-text-disabled truncate">
+            {role} · {displayCode}
+          </p>
+          <ThemeToggle />
+        </div>
         <button
           type="button"
           onClick={handleSignOut}

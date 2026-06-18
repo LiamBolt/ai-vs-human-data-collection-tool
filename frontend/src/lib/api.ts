@@ -163,6 +163,9 @@ export const createLayer2Log = (payload: Layer2LogPayload) =>
 export const getMonitor = (batchId: string) =>
   request<ParticipantMonitorRow[]>('GET', `/batches/${batchId}/monitor`, undefined, true)
 
+export const getAwaitingCount = () =>
+  request<{ count: number }>('GET', '/participants/awaiting-count', undefined, true)
+
 export const getExportMeta = () =>
   request<ExportMeta[]>('GET', '/exports/meta', undefined, true)
 

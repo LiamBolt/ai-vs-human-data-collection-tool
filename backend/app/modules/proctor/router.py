@@ -48,6 +48,11 @@ async def check_in(payload: schemas.CheckInRequest, db: DbSession, staff: StaffD
     return await service.check_in(db, payload, uuid.UUID(staff.sub))
 
 
+@router.get("/participants/awaiting-count", response_model=schemas.AwaitingCountOut)
+async def awaiting_count(db: DbSession, _: StaffDep) -> schemas.AwaitingCountOut:
+    return schemas.AwaitingCountOut(count=await service.awaiting_assignment_count(db))
+
+
 @router.get("/participants/{participant_id}/assignment-suggestion", response_model=schemas.AssignmentSuggestion)
 async def assignment_suggestion(participant_id: uuid.UUID, db: DbSession, _: StaffDep) -> schemas.AssignmentSuggestion:
     return await service.assignment_suggestion(db, participant_id)

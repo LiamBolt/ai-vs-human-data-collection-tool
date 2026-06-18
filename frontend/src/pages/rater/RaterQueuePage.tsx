@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getRaterQueue, submitRaterScore } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
+import { useThemeStore } from '@/store/theme'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { BrandLogo } from '@/components/ui/BrandLogo'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import type { RaterResponse, RaterScorePayload } from '@/types'
 
 // Segmented 0–2 control
@@ -57,7 +59,14 @@ export default function RaterQueuePage() {
   const navigate = useNavigate()
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const displayCode = useAuthStore((s) => s.display_code)
+  const setFloatingToggleMode = useThemeStore((s) => s.setFloatingToggleMode)
   const qc = useQueryClient()
+
+  // The console hosts brightness in its sidebar → hide the floating toggle.
+  useEffect(() => {
+    setFloatingToggleMode('hide')
+    return () => setFloatingToggleMode('show')
+  }, [setFloatingToggleMode])
 
   const { data: queue = [], isLoading, refetch } = useQuery({
     queryKey: ['rater-queue'],
@@ -144,8 +153,9 @@ export default function RaterQueuePage() {
         )}
       </div>
 
-      <div className="px-4 py-4 border-t border-border-subtle">
+      <div className="px-4 py-4 border-t border-border-subtle flex items-center justify-between gap-2">
         <button type="button" onClick={handleSignOut} className="text-xs text-text-disabled hover:text-text-secondary">Sign out</button>
+        <ThemeToggle />
       </div>
     </>
   )

@@ -52,9 +52,16 @@ function RaterRequireAuth() {
 }
 
 export default function App() {
-  // The task workspace owns the brightness control in its mobile bottom bar, so
-  // hide this floating toggle on mobile while that screen is active (declutter).
-  const floatingToggleHidden = useThemeStore((s) => s.floatingToggleHidden)
+  // Screens with their own brightness control (task bottom bar, console sidebars)
+  // tell the floating toggle to step aside so it never double-renders or floats
+  // awkwardly over their chrome.
+  const floatingToggleMode = useThemeStore((s) => s.floatingToggleMode)
+  const floatingToggleClass =
+    floatingToggleMode === 'hide'
+      ? 'hidden'
+      : floatingToggleMode === 'hide-mobile'
+      ? 'max-lg:hidden'
+      : ''
 
   return (
     <ErrorBoundary>
@@ -69,10 +76,7 @@ export default function App() {
           into the fixed top bars (z-40: above bars, below modals/open drawers).
           Hidden on mobile when a screen provides its own brightness control. */}
       <ThemeToggle
-        className={[
-          'fixed top-2.5 right-3 z-40 lg:top-4 lg:right-4',
-          floatingToggleHidden ? 'max-lg:hidden' : '',
-        ].join(' ')}
+        className={['fixed top-2.5 right-3 z-40 lg:top-4 lg:right-4', floatingToggleClass].join(' ')}
       />
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
         <Routes>

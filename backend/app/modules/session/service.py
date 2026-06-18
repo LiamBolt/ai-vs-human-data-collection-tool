@@ -120,6 +120,15 @@ async def resume(db: AsyncSession, payload: schemas.ResumeRequest) -> schemas.Re
         db.add(state)
         await db.commit()
 
+    # Auto-assign a group if the participant is waiting and no proctor handles it
+    # in time. The participant's own resume poll is the trigger (no background job
+    # needed). Lives in the proctor service; local import avoids an import cycle.
+    if participant.status == ParticipantStatus.FORM0 and participant.group_assignment is None:
+        from app.modules.proctor import service as proctor_service
+
+        await proctor_service.maybe_auto_assign(db, participant)
+        await db.commit()  # persists the assignment (or the form0_completed_at backfill)
+
     # Heal a stale/backward step (e.g. left on an already-submitted task) so the
     # participant always resumes on the first task they still need to do.
     healed = await _resolve_task_step(db, participant, state.current_step)
@@ -211,6 +220,7 @@ async def submit_form0(db: AsyncSession, payload: schemas.Form0Request) -> schem
     if not participant.warmup_score_overridden:
         participant.warmup_final_score = auto
     participant.status = ParticipantStatus.FORM0
+    participant.form0_completed_at = _now()  # starts the proctor grace window
 
     state = await repo.get_state(db, participant.id)
     if state is not None:

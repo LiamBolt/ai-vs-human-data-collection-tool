@@ -14,6 +14,7 @@ DATA_DICTIONARY: list[DataDictRow] = [
     {"export": "participants", "column": "batch_code", "type": "string", "allowed_values": "", "description": "Batch identifier YYYYMMDD_SITE_BATCH##."},
     {"export": "participants", "column": "group_assignment", "type": "enum", "allowed_values": "CONTROL|AI_ASSISTED", "description": "Experimental group."},
     {"export": "participants", "column": "assignment_method", "type": "enum", "allowed_values": "SUGGESTED_ACCEPTED|MANUAL_OVERRIDE", "description": "How the group was assigned."},
+    {"export": "participants", "column": "auto_assigned", "type": "bool", "allowed_values": "true|false", "description": "True if the server auto-assigned the group (no proctor acted within the grace window); false if a proctor assigned it."},
     {"export": "participants", "column": "consent_given", "type": "boolean", "allowed_values": "true|false", "description": "Consent attestation captured at check-in."},
     {"export": "participants", "column": "age_band", "type": "enum", "allowed_values": "18_24|25_34|35_44|45_PLUS", "description": "Form 0 age band."},
     {"export": "participants", "column": "education_level", "type": "enum", "allowed_values": "SECONDARY|DIPLOMA|DEGREE|POSTGRAD", "description": "Form 0 highest education."},

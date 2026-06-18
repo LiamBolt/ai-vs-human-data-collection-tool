@@ -27,6 +27,8 @@ from app.models import (
     TelemetryLog,
 )
 from app.enums import TelemetryEventType
+from app.config import settings
+from app.security import proctor_presence
 from app.modules.proctor import schemas
 
 
@@ -158,16 +160,11 @@ def stratum_of(participant: Participant) -> str:
     return f"{participant.education_level.value}/{_ai_bucket(participant.ai_use_frequency)}"
 
 
-async def assignment_suggestion(
-    db: AsyncSession, participant_id: uuid.UUID
-) -> schemas.AssignmentSuggestion:
-    participant = await db.get(Participant, participant_id)
-    if participant is None:
-        raise NotFoundError("Participant not found.")
-    if participant.education_level is None or participant.ai_use_frequency is None:
-        # Stratification needs Form 0 — not available yet.
-        raise ConflictError("Form 0 is not complete yet.", code="FORM0_INCOMPLETE")
-
+async def _compute_suggestion(
+    db: AsyncSession, participant: Participant
+) -> tuple[GroupAssignment, str, dict[str, int]]:
+    """Stratified balancing: keep each (education × AI-familiarity) stratum even,
+    then keep the site even, then coin-flip. Returns (group, stratum, counts)."""
     target_stratum = stratum_of(participant)
 
     # Tally assigned participants in the same site by (stratum, group).
@@ -207,12 +204,63 @@ async def assignment_suggestion(
     else:
         suggested = random.choice([GroupAssignment.CONTROL, GroupAssignment.AI_ASSISTED])
 
+    return suggested, target_stratum, counts
+
+
+async def assignment_suggestion(
+    db: AsyncSession, participant_id: uuid.UUID
+) -> schemas.AssignmentSuggestion:
+    participant = await db.get(Participant, participant_id)
+    if participant is None:
+        raise NotFoundError("Participant not found.")
+    if participant.education_level is None or participant.ai_use_frequency is None:
+        # Stratification needs Form 0 — not available yet.
+        raise ConflictError("Form 0 is not complete yet.", code="FORM0_INCOMPLETE")
+
+    suggested, target_stratum, counts = await _compute_suggestion(db, participant)
     return schemas.AssignmentSuggestion(
         participant_id=participant.id,
         suggested_group=suggested,
         stratum=target_stratum,
         current_counts=counts,
     )
+
+
+async def _apply_assignment(
+    db: AsyncSession,
+    participant: Participant,
+    group: GroupAssignment,
+    method: AssignmentMethod,
+    *,
+    auto: bool = False,
+) -> None:
+    """Set the group and advance the participant into Session 1. Does NOT commit."""
+    participant.group_assignment = group
+    participant.assignment_method = method
+    participant.auto_assigned = auto
+    participant.status = ParticipantStatus.SESSION1
+
+    state = await db.get(ParticipantState, participant.id)
+    if state is not None:
+        state.current_session = 1
+        state.current_step = "s1_intro"
+
+    # Open the Session 1 record.
+    existing_meta = (
+        await db.execute(
+            select(SessionMeta).where(
+                SessionMeta.participant_id == participant.id, SessionMeta.session_number == 1
+            )
+        )
+    ).scalar_one_or_none()
+    if existing_meta is None:
+        db.add(
+            SessionMeta(
+                participant_id=participant.id,
+                session_number=1,
+                started_at=datetime.now(timezone.utc),
+            )
+        )
 
 
 async def set_assignment(
@@ -226,38 +274,58 @@ async def set_assignment(
     if payload.method == AssignmentMethod.MANUAL_OVERRIDE and not (payload.override_reason or "").strip():
         raise ValidationError("An override reason is required for manual overrides.")
 
-    participant.group_assignment = payload.group
-    participant.assignment_method = payload.method
-    participant.status = ParticipantStatus.SESSION1
-
-    state = await db.get(ParticipantState, participant_id)
-    if state is not None:
-        state.current_session = 1
-        state.current_step = "s1_intro"
-
-    # Open the Session 1 record.
-    existing_meta = (
-        await db.execute(
-            select(SessionMeta).where(
-                SessionMeta.participant_id == participant_id, SessionMeta.session_number == 1
-            )
-        )
-    ).scalar_one_or_none()
-    if existing_meta is None:
-        db.add(
-            SessionMeta(
-                participant_id=participant_id,
-                session_number=1,
-                started_at=datetime.now(timezone.utc),
-            )
-        )
-
+    await _apply_assignment(db, participant, payload.group, payload.method, auto=False)
     await db.commit()
     return schemas.AssignmentSuggestion(
         participant_id=participant.id,
         suggested_group=payload.group,
         stratum=stratum_of(participant),
         current_counts={},
+    )
+
+
+async def maybe_auto_assign(db: AsyncSession, participant: Participant) -> bool:
+    """Auto-assign a participant who is awaiting a group when no proctor handles it.
+
+    With no recently-active proctor the server assigns immediately; while a
+    proctor is active they get `assignment_grace_seconds` to assign manually
+    first. Uses the same stratified balancing as the manual suggestion and is
+    recorded with `auto_assigned=True`. Does NOT commit. Returns True if assigned.
+    """
+    if participant.group_assignment is not None:
+        return False
+    if participant.status != ParticipantStatus.FORM0:
+        return False
+    if participant.education_level is None or participant.ai_use_frequency is None:
+        return False  # Form 0 not actually complete
+
+    now = datetime.now(timezone.utc)
+    if participant.form0_completed_at is None:
+        participant.form0_completed_at = now  # backfill rows predating this feature
+
+    if proctor_presence.is_active(settings.proctor_presence_seconds):
+        elapsed = (now - participant.form0_completed_at).total_seconds()
+        if elapsed < settings.assignment_grace_seconds:
+            return False  # within the grace window — let the proctor assign
+
+    group, _, _ = await _compute_suggestion(db, participant)
+    await _apply_assignment(db, participant, group, AssignmentMethod.SUGGESTED_ACCEPTED, auto=True)
+    return True
+
+
+async def awaiting_assignment_count(db: AsyncSession) -> int:
+    """Participants who finished Form 0 but have no group yet (the proctor to-do)."""
+    return int(
+        (
+            await db.execute(
+                select(func.count())
+                .select_from(Participant)
+                .where(
+                    Participant.status == ParticipantStatus.FORM0,
+                    Participant.group_assignment.is_(None),
+                )
+            )
+        ).scalar_one()
     )
 
 

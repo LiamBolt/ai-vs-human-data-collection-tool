@@ -63,6 +63,10 @@ class CheckInResponse(BaseModel):
     participant_code: str
 
 
+class AwaitingCountOut(BaseModel):
+    count: int
+
+
 # ── Assignment ────────────────────────────────────────────────────────────────
 class AssignmentSuggestion(BaseModel):
     participant_id: uuid.UUID

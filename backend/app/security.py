@@ -66,6 +66,29 @@ async def get_current_staff(
     return decode_token(credentials.credentials)
 
 
+class ProctorPresence:
+    """In-memory record of the last time any proctor/admin made a request.
+
+    LAN-grade and resets on process restart — same approach as the login rate
+    limiter above. Drives automatic group assignment: with no recently-active
+    proctor, the server assigns groups immediately instead of waiting.
+    """
+
+    def __init__(self) -> None:
+        self._last_active: float | None = None
+
+    def mark(self) -> None:
+        self._last_active = time.monotonic()
+
+    def is_active(self, window_seconds: float) -> bool:
+        if self._last_active is None:
+            return False
+        return (time.monotonic() - self._last_active) <= window_seconds
+
+
+proctor_presence = ProctorPresence()
+
+
 def require_role(*roles: StaffRole):
     """Dependency factory enforcing that the caller holds one of the given roles."""
 
@@ -76,6 +99,9 @@ def require_role(*roles: StaffRole):
     ) -> TokenClaims:
         if staff.role not in allowed:
             raise ForbiddenError("You do not have access to this resource.")
+        # Any authenticated proctor/admin request counts as presence.
+        if staff.role in (StaffRole.PROCTOR, StaffRole.ADMIN):
+            proctor_presence.mark()
         return staff
 
     return _dependency

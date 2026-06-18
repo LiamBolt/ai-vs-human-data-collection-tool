@@ -83,7 +83,7 @@ async def _participant_code_map(db: AsyncSession) -> dict:
 async def _participants(db: AsyncSession) -> tuple[list[str], list[dict]]:
     fields = [
         "participant_code", "site_code", "batch_code", "group_assignment", "assignment_method",
-        "consent_given", "age_band", "education_level", "english_comfort", "ai_use_frequency",
+        "auto_assigned", "consent_given", "age_band", "education_level", "english_comfort", "ai_use_frequency",
         "ai_confidence", "warmup_auto_score", "warmup_final_score", "warmup_score_overridden",
         "device_category", "os_family", "browser_family", "status",
     ]
@@ -100,6 +100,7 @@ async def _participants(db: AsyncSession) -> tuple[list[str], list[dict]]:
         out.append({
             "participant_code": p.participant_code, "site_code": site_code, "batch_code": batch_code,
             "group_assignment": p.group_assignment, "assignment_method": p.assignment_method,
+            "auto_assigned": p.auto_assigned,
             "consent_given": p.consent_given, "age_band": p.age_band, "education_level": p.education_level,
             "english_comfort": p.english_comfort, "ai_use_frequency": p.ai_use_frequency,
             "ai_confidence": p.ai_confidence, "warmup_auto_score": p.warmup_auto_score,

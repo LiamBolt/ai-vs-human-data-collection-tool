@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     # Study protocol
     break_duration_seconds: int = 300
 
+    # Group-assignment automation. If a proctor is active, they get this grace
+    # window to assign manually before the server auto-assigns; with no active
+    # proctor the server assigns immediately. proctor_presence_seconds is how
+    # recently a proctor request must have arrived to count as "active".
+    assignment_grace_seconds: int = 40
+    proctor_presence_seconds: int = 25
+
     # Bootstrap admin (created on first startup if no staff users exist)
     admin_bootstrap_username: str = "admin"
     admin_bootstrap_password: str = "changeme-admin"

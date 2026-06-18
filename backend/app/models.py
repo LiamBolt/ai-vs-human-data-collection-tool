@@ -176,6 +176,11 @@ class Participant(Base, TimestampMixin):
         _enum(enums.ParticipantStatus, "participant_status"), nullable=False
     )
 
+    # Group-assignment automation (migration 0002): when Form 0 finished (start of
+    # the proctor grace window) and whether the server assigned the group itself.
+    form0_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    auto_assigned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
 
 class ParticipantState(Base):
     __tablename__ = "participant_states"

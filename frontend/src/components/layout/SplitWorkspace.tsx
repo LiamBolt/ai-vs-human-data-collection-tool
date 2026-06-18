@@ -46,15 +46,15 @@ export function SplitWorkspace({ leftPanel, rightPanel, contextLabel = 'Question
   const [view, setView] = useState<MobileView>('task')
   const theme = useThemeStore((s) => s.theme)
   const toggleTheme = useThemeStore((s) => s.toggleTheme)
-  const setFloatingToggleHidden = useThemeStore((s) => s.setFloatingToggleHidden)
+  const setFloatingToggleMode = useThemeStore((s) => s.setFloatingToggleMode)
   const isDark = theme === 'dark'
 
-  // Own the brightness control in the bottom bar on mobile → hide the global
-  // floating toggle while this workspace is mounted (restored on unmount).
+  // The bottom bar owns brightness on mobile → hide the floating toggle on mobile
+  // only (desktop keeps it) while this workspace is mounted.
   useEffect(() => {
-    setFloatingToggleHidden(true)
-    return () => setFloatingToggleHidden(false)
-  }, [setFloatingToggleHidden])
+    setFloatingToggleMode('hide-mobile')
+    return () => setFloatingToggleMode('show')
+  }, [setFloatingToggleMode])
 
   return (
     <>
