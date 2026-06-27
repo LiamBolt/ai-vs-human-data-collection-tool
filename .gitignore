@@ -27,3 +27,8 @@ frontend/public/mockServiceWorker.js
 Thumbs.db
 .idea/
 .vscode/
+
+# DB backups (data — keep out of git)
+backups/
+
+backend/scripts/
